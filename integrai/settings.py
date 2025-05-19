@@ -1,3 +1,8 @@
+# É um arquivo do Django que contém diversas configurações, como por exemplo: 
+# Aplicações instaladas, configuração de banco de dados, middleware, timezone e outros.
+
+
+
 """
 Django settings for integrai project.
 
@@ -37,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'core',
 ]
 
 MIDDLEWARE = [

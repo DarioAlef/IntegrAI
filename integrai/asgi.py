@@ -1,3 +1,10 @@
+#  Asynchronous Server Gateway Interface – Segue o mesmo raciocínio do WSGI 
+# porém para tarefas assíncronas. O ASGI é uma especificação para aplicações web assíncronas
+# e servidores web que suportam Python. Ele permite que aplicações web assíncronas
+# se comuniquem com servidores web e vice-versa. O ASGI é uma evolução do WSGI,
+# projetado para lidar com aplicações que exigem comunicação em tempo real, como WebSockets.
+
+
 """
 ASGI config for integrai project.
 

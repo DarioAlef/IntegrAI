@@ -1,3 +1,6 @@
+# É um módulo responsável pelas rotas do Django e pela configuração do servidor web.
+
+
 """
 URL configuration for integrai project.
 
