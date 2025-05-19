@@ -17,7 +17,7 @@ def get_chat_response(message):
         "Content-Type": "application/json"
     }
     payload = {
-        "model": "meta-llama/llama-3.3-8b-instruct:free    ",
+        "model": "meta-llama/llama-4-maverick:free",
         "messages": [
             {"role": "system", "content": "Você é um atendente de IA, responda de forma clara e útil."},
             {"role": "user", "content": message}
