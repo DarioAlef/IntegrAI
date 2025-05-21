@@ -1,9 +1,5 @@
 .env
 .env/
-api/evolution/.env
-api/lhama/.env
-Q&A.csv
-Q&A
 
 .venv
 .venv/

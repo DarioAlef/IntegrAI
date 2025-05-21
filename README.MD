@@ -49,10 +49,12 @@ Siga estas instruções para configurar e executar o IntegrAI:
         DB_USER=
         DB_PASSWORD=
 
-        SERVER_URL=      # URL do Evolution API
-        INSTANCE=        # Nome da instância no Evolution API
-        API_KEY=         # API Key do Evolution API
-
+        SERVER_URL=        # URL do Evolution API
+        INSTANCE=          # Nome da instância no Evolution API
+        AUTHENTICATION_API_KEY=     # API Key do Evolution API
+        WEBHOOK_URL=
+        RECIVER_NUMBER=
+        SENDER_NUMBER=
         OPENROUTER_API_KEY=  # Sua API Key do OpenRouter
         ```
 
