@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
-from utils.evolutionAPI import EvolutionAPI
 import flask
 import requests
+from utils.evolutionAPI import EvolutionAPI
 
 e = EvolutionAPI()
 app = flask.Flask(__name__)
@@ -30,6 +30,7 @@ def get_chat_response(message):
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = flask.request.json
+    print("Webhook recebido:", data)
     message = data['data']['message']['conversation']
     instance = data['instance']
     instance_key = data['apikey']
