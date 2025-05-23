@@ -7,14 +7,14 @@ import base64
 # audio_file_path = os.path.join(script_directory, "audio.opus")
 
 #transformar audio em base64 e depois em string
-try:
-    with open("audio.opus", "rb") as arquivo:
-        arq_binary = arquivo.read()
-        arq_b64 = base64.b64encode(arq_binary).decode('utf-8')
-        returned = arq_b64
-except FileNotFoundError:
-    print(f"Error: The file {audio_file_path} was not found.")
-    exit()
+# try:
+#     with open("audio.opus", "rb") as arquivo:
+#         arq_binary = arquivo.read()
+#         arq_b64 = base64.b64encode(arq_binary).decode('utf-8')
+#         returned = arq_b64
+# except FileNotFoundError:
+#     print(f"Error: The file {audio_file_path} was not found.")
+#     exit()
 
 load_dotenv()
 
