@@ -5,9 +5,9 @@ import os
 
 load_dotenv()
 
-user_message = input(str("\nDigite sua mensagem: "))
+# user_message = input(str("\nDigite sua mensagem: "))
 
-def get_openrouter_response(user_message):
+def get_openrouter_response():
     api_key = os.getenv("OPENROUTER_API_KEY")
     if api_key:
         api_key = api_key.strip()
@@ -51,5 +51,5 @@ def get_openrouter_response(user_message):
         return f"Erro na resposta da API: {response_json}"
 
 
-resposta = get_openrouter_response(user_message)
+resposta = get_openrouter_response()
 print(resposta,"\n")
