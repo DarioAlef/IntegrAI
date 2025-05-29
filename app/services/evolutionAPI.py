@@ -14,6 +14,7 @@ class EvolutionAPI():
     def enviar_mensagem(self, message, instance, instance_key, sender_number):
         url = f"http://localhost:8080/message/sendText/{instance}"
 
+        # payload é o corpo da requisição, sua importância é enviar os dados necessários para a API.
         payload = {
             "number": sender_number,  
             "options": {
