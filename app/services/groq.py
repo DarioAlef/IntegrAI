@@ -17,4 +17,5 @@ def transcrever_audio_groq(audio_bytes):
         language="pt",  # Define o idioma como português
         temperature=0.0  # Temperatura (criatividade) da transcrição
     )
+    
     return transcription.text  # Retorna o texto transcrito

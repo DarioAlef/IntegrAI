@@ -9,3 +9,6 @@ def extrair_texto(msg_data):
         return msg_data["extendedTextMessage"]["text"]
     # Se não encontrar texto, retorna None
     return None
+
+def split_message(text, max_length=1000):
+    return [text[i:i+max_length] for i in range(0, len(text), max_length)]
