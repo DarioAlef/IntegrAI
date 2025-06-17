@@ -13,10 +13,19 @@ services:
     volumes:
       - evolution_instances:/evolution/instances
       - evolution_store:/evolution/store
-
     command: ['node', './dist/src/main.js']
     expose:
       - 8080
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_tunnel
+    # O host.docker.internal funciona no Windows/Mac para acessar serviços do host
+    command: tunnel --url http://host.docker.internal:5000
+    depends_on:
+      - api
+    # Se quiser ver os logs no terminal:
+    # tty: true
 
 volumes:
   evolution_instances:

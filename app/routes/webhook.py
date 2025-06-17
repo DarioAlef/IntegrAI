@@ -27,6 +27,8 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
     message = None   # Vai guardar o texto da mensagem recebida (se houver).
     from_me = False  # Indica se a mensagem foi enviada pelo próprio bot.
     audio_data = None  # Vai guardar os bytes do áudio recebido (se houver).
+    sender_number = None # Vai guardar o número do remetente (quem enviou a mensagem).
+    user = None # Vai guardar o usuário do banco de dados associado ao remetente.
 
 
     # Verifica se o JSON recebido tem os campos esperados para processar a mensagem.   
@@ -39,6 +41,7 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
         # Se encontrou áudio em base64, decodifica para bytes.
         audio_data = base64.b64decode(audio_base64) if audio_base64 else None
         # Se não encontrou áudio em base64, mas existe o campo audioMessage, tenta baixar o áudio via URL.
+        
         if not audio_data and "audioMessage" in msg_data:
             audio_url = msg_data["audioMessage"]["url"]  # Pega a URL do áudio.
             audio_response = requests.get(audio_url)  # Baixa o arquivo de áudio.
@@ -46,12 +49,10 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
 
 
     # Pega o número do remetente (quem enviou a mensagem).
-    sender_number = None
     if "data" in data and "key" in data["data"]:
         sender_number = data['data']['key']['remoteJid'].split("@")[0]  # Extrai só o número do campo remoto.
 
     # Busca ou cria o usuário no banco de dados, usando o número do remetente.
-    user = None
     if sender_number:
         user, _ = await run_in_threadpool(User.objects.get_or_create, phone_number=sender_number)
         # get_or_create retorna uma tupla (objeto, criado?), por isso o _.
