@@ -2,8 +2,8 @@ version: '3.3'
 
 services:
 
-  api:
-    container_name: evolution_api
+  evolution_appi:
+    container_name: evolution
     image: atendai/evolution-api:v1.8.2
     restart: always
     ports:
@@ -20,12 +20,9 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared_tunnel
-    # O host.docker.internal funciona no Windows/Mac para acessar serviços do host
     command: tunnel --url http://host.docker.internal:5000
     depends_on:
-      - api
-    # Se quiser ver os logs no terminal:
-    # tty: true
+      - evolution
 
 volumes:
   evolution_instances:
