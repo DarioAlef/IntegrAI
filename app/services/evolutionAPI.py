@@ -12,7 +12,7 @@ class EvolutionAPI():
 
     # Método para o bot enviar uma mensagem de texto via Evolution API.
     def enviar_mensagem(self, message, instance, instance_key, sender_number):
-        url = f"http://localhost:8080/message/sendText/{instance}"
+        url = f"http://evolution:8080/message/sendText/{instance}"
 
         # payload é o corpo da requisição, sua importância é enviar os dados necessários para a API.
         payload = {

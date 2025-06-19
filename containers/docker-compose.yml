@@ -1,0 +1,47 @@
+version: '3.3'
+
+services:
+  evolution:
+    container_name: evolution
+    image: atendai/evolution-api:v1.8.2
+    restart: always
+    ports:
+      - 8080:8080
+    env_file:
+      - ../.env
+    volumes:
+      - evolution_instances:/evolution/instances
+      - evolution_store:/evolution/store
+    command: ['node', './dist/src/main.js']
+    expose:
+      - 8080
+
+  fastapi:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: fastapi
+    # volumes:
+    #   - ../app:/app
+    ports:
+      - 5000:5000
+    env_file:
+      - ../.env
+    depends_on:
+      - evolution  
+
+  db:
+    image: postgres:16
+    container_name: integrai-db
+    restart: always
+    env_file:
+      - ../.env
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  evolution_instances:
+  evolution_store:
+  pgdata:

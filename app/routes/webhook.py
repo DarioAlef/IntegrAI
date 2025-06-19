@@ -30,6 +30,9 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
     sender_number = None # Vai guardar o número do remetente (quem enviou a mensagem).
     user = None # Vai guardar o usuário do banco de dados associado ao remetente.
 
+    # Trecho para ignorar mensagens que não são relevantes.
+    # if "data" not in data or "message" not in data["data"]:
+    #     return {"status": "ignored"}
 
     # Verifica se o JSON recebido tem os campos esperados para processar a mensagem.   
     if "data" in data and "message" in data["data"]:
@@ -41,6 +44,12 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
         # Se encontrou áudio em base64, decodifica para bytes.
         audio_data = base64.b64decode(audio_base64) if audio_base64 else None
         # Se não encontrou áudio em base64, mas existe o campo audioMessage, tenta baixar o áudio via URL.
+        
+        # Debug: imprime informações sobre a mensagem e áudio recebidos
+        print("msg_data:", msg_data)
+        print("audio_base64:", audio_base64)
+        print("audio_data:", audio_data)
+        print("Entrou no bloco de áudio!")
         
         if not audio_data and "audioMessage" in msg_data:
             audio_url = msg_data["audioMessage"]["url"]  # Pega a URL do áudio.
