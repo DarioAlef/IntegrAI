@@ -21,7 +21,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Access Key ID da AWS (segredo)
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Secret Access Key da AWS (segredo)
-          aws-region: us-east-2  # Região onde está seu ECR (ajuste se necessário)
+          aws-region: us-east-1  # Região onde está seu ECR (ajuste se necessário)
 
       # Faz login no Amazon ECR para permitir push/pull de imagens Docker
       - name: Login to Amazon ECR
