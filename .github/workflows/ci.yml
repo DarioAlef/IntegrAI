@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest  # Usa uma máquina virtual Ubuntu para rodar o job
 
     services:
-      postgres:  # Define um serviço de banco de dados PostgreSQL para os testes
-        image: postgres:16  # Usa a imagem oficial do PostgreSQL versão 16
+      postgres:
+        image: postgres:16
         env:
-          POSTGRES_DB: integrai  # Nome do banco de dados a ser criado
-          POSTGRES_USER: postgres  # Usuário do banco de dados
-          POSTGRES_PASSWORD: 2390  # Senha do banco de dados
+          POSTGRES_DB: integrai
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 2390
         ports:
-          - 5432:5432  # Mapeia a porta padrão do PostgreSQL
+          - 5432:5432
         options: >-
           --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
           # Garante que o serviço só estará disponível quando o banco estiver pronto
