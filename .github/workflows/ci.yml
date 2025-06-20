@@ -22,10 +22,6 @@ jobs:
           POSTGRES_PASSWORD: 2390
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
-          # Garante que o serviço só estará disponível quando o banco estiver pronto
-
     env:
       DB_ENGINE: django.db.backends.postgresql_psycopg2  # Define o backend do Django para PostgreSQL
       DB_NAME: integrai  # Nome do banco de dados usado nos testes
