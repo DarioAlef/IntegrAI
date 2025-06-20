@@ -5,9 +5,9 @@ name: CI  # Nome do workflow que aparecerá no GitHub Actions
 
 on:
   push:
-    branches: [main, develop]  # Executa o workflow em push para as branches main e develop
+    branches: [develop]  # Executa o workflow em push para as branches main e develop
   pull_request:
-    branches: [main, develop]  # Executa o workflow em pull requests para as branches main e develop
+    branches: [develop]  # Executa o workflow em pull requests para as branches main e develop
 
 jobs:
   test:

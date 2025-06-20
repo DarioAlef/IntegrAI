@@ -69,4 +69,9 @@ jobs:
             echo "Nenhuma imagem antiga para remover."  # Mensagem caso não haja imagens para deletar
           fi
 
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 . || true
+
       # (Opcional) Aqui você pode adicionar passos para deploy automático no ECS, EKS, etc.
