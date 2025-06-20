@@ -1,5 +1,5 @@
 # .github/workflows/cd.yml
-# Nome do workflow que aparecerá no GitHub Actions
+# Nome do workflow que aparecerá no GitHub Actions #pipeli pronta pro deploy
 name: CD
 
 # Define quando o workflow será executado
