@@ -48,7 +48,7 @@ jobs:
       # Remove imagens antigas do ECR, mantendo apenas a tag 'latest'
       - name: Clean old images from ECR (keep only 'latest')
         env:
-          AWS_REGION: us-east-2  # Região do ECR
+          AWS_REGION: us-east-1  # Região do ECR
           ECR_REPOSITORY: integrai  # Nome do repositório no ECR
         run: |
           # Lista imagens que NÃO têm a tag 'latest'
