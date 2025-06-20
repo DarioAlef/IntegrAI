@@ -1,1 +1,64 @@
-#aS
+#aS# .github/workflows/ci.yml
+# Este workflow é responsável por integração contínua (CI): roda testes, lint e builda a imagem Docker para garantir a qualidade do código.
+
+name: CI  # Nome do workflow que aparecerá no GitHub Actions
+
+on:
+  push:
+    branches: [main, develop]  # Executa o workflow em push para as branches main e develop
+  pull_request:
+    branches: [main, develop]  # Executa o workflow em pull requests para as branches main e develop
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Usa uma máquina virtual Ubuntu para rodar o job
+
+    services:
+      postgres:  # Define um serviço de banco de dados PostgreSQL para os testes
+        image: postgres:16  # Usa a imagem oficial do PostgreSQL versão 16
+        env:
+          POSTGRES_DB: integrai  # Nome do banco de dados a ser criado
+          POSTGRES_USER: postgres  # Usuário do banco de dados
+          POSTGRES_PASSWORD: 2390  # Senha do banco de dados
+        ports:
+          - 5432:5432  # Mapeia a porta padrão do PostgreSQL
+        options: >-
+          --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
+          # Garante que o serviço só estará disponível quando o banco estiver pronto
+
+    env:
+      DB_ENGINE: django.db.backends.postgresql_psycopg2  # Define o backend do Django para PostgreSQL
+      DB_NAME: integrai  # Nome do banco de dados usado nos testes
+      DB_HOST: localhost  # Host do banco de dados (localhost pois o serviço roda junto)
+      DB_PORT: 5432  # Porta do banco de dados
+      DB_USER: postgres  # Usuário do banco de dados
+      DB_PASSWORD: 2390  # Senha do banco de dados
+
+    steps:
+      - uses: actions/checkout@v4  # Baixa o código do repositório para a máquina virtual
+
+      - name: Set up Python
+        uses: actions/setup-python@v5  # Instala o Python na versão especificada
+        with:
+          python-version: '3.10.11'  # Define a versão do Python a ser usada
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip  # Atualiza o pip para a última versão
+          pip install -r requirements.txt      # Instala todas as dependências do projeto
+
+      - name: Run migrations
+        run: |
+          python manage.py migrate  # Aplica as migrações do Django para preparar o banco de dados
+
+      - name: Run tests
+        run: |
+          python manage.py test  # Executa todos os testes do Django para garantir que o código está funcionando
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8  # Instala o flake8, ferramenta de lint para Python
+          flake8 .            # Roda o flake8 em todo o projeto para garantir o padrão de código
+
+      - name: Build Docker image (opcional)
+        run: docker build -t integrai-test .  # Builda a imagem Docker localmente para garantir que o Dockerfile está correto

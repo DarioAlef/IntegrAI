@@ -1,0 +1,72 @@
+# .github/workflows/cd.yml
+# Nome do workflow que aparecerá no GitHub Actions
+name: CD
+
+# Define quando o workflow será executado
+on:
+  push:
+    branches: [main]  # Executa apenas quando houver push na branch main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest  # Usa uma máquina virtual Ubuntu para rodar o job
+
+    steps:
+      # Baixa o código do repositório para a máquina virtual
+      - uses: actions/checkout@v4
+
+      # Configura as credenciais da AWS usando os segredos definidos no GitHub
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # Access Key ID da AWS (segredo)
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # Secret Access Key da AWS (segredo)
+          aws-region: us-east-2  # Região onde está seu ECR (ajuste se necessário)
+
+      # Faz login no Amazon ECR para permitir push/pull de imagens Docker
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Builda a imagem Docker, marca com a tag 'latest' e faz push para o ECR
+      - name: Build, tag, and push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}  # URL do registro ECR (ex: xxxxxxxx.dkr.ecr.us-east-2.amazonaws.com)
+          ECR_REPOSITORY: integrai  # Nome do repositório no ECR
+          IMAGE_TAG: latest  # Tag da imagem Docker
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .  # Builda a imagem Docker localmente
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG        # Envia a imagem para o ECR
+
+      # (Opcional) Roda os testes do projeto antes do deploy para garantir que está tudo funcionando
+      - name: Run tests before deploy
+        run: |
+          python -m pip install --upgrade pip  # Atualiza o pip
+          pip install -r requirements.txt      # Instala as dependências do projeto
+          python manage.py test                # Executa os testes do Django
+
+      # Remove imagens antigas do ECR, mantendo apenas a tag 'latest'
+      - name: Clean old images from ECR (keep only 'latest')
+        env:
+          AWS_REGION: us-east-2  # Região do ECR
+          ECR_REPOSITORY: integrai  # Nome do repositório no ECR
+        run: |
+          # Lista imagens que NÃO têm a tag 'latest'
+          images_to_delete=$(aws ecr list-images \
+            --region $AWS_REGION \
+            --repository-name $ECR_REPOSITORY \
+            --filter "tagStatus=TAGGED" \
+            --query 'imageIds[?!(contains(imageTag, `latest`))]' \
+            --output json)
+
+          # Se houver imagens antigas, deleta elas
+          if [ "$images_to_delete" != "[]" ]; then
+            aws ecr batch-delete-image \
+              --region $AWS_REGION \
+              --repository-name $ECR_REPOSITORY \
+              --image-ids "$images_to_delete"
+          else
+            echo "Nenhuma imagem antiga para remover."  # Mensagem caso não haja imagens para deletar
+          fi
+
+      # (Opcional) Aqui você pode adicionar passos para deploy automático no ECS, EKS, etc.
