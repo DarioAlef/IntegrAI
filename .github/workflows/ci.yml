@@ -1,7 +1,7 @@
 #aS# .github/workflows/ci.yml
 # Este workflow é responsável por integração contínua (CI): roda testes, lint e builda a imagem Docker para garantir a qualidade do código.
 
-name: CI  # Nome do workflow que aparecerá no GitHub Actions
+name: CI  # Nome do workflow que aparecerá no GitHub Actions.....
   
 on:
   push:
