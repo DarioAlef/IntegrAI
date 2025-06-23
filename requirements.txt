@@ -28,6 +28,7 @@ httpcore==1.0.9
 httpx==0.28.1
 httpx-sse==0.4.0
 idna==3.10
+iniconfig==2.1.0
 itsdangerous==2.2.0
 jiter==0.10.0
 jsonpatch==1.33
@@ -43,12 +44,16 @@ mypy_extensions==1.1.0
 numpy==2.2.6
 orjson==3.10.18
 packaging==24.2
+pluggy==1.6.0
 propcache==0.3.1
-# psycopg2==2.9.10
 psycopg2-binary==2.9.10
 pydantic==2.11.4
 pydantic-settings==2.9.1
 pydantic_core==2.33.2
+Pygments==2.19.2
+pytest==8.4.1
+pytest-asyncio==1.0.0
+pytest-django==4.11.1
 python-dotenv==1.1.0
 PyYAML==6.0.2
 regex==2024.11.6
@@ -60,6 +65,7 @@ sqlparse==0.5.3
 starlette==0.46.2
 tenacity==9.1.2
 tiktoken==0.9.0
+tomli==2.2.1
 tqdm==4.67.1
 typing-inspect==0.9.0
 typing-inspection==0.4.0
