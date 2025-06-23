@@ -63,4 +63,4 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          pytest --maxfail=1 --disable-warnings -v
+          pytest --maxfail=1 --disable-warnings -v  # Executa os testes com pytest, parando no primeiro erro e desabilitando avisos
