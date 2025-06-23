@@ -10,6 +10,7 @@ def client():
 
 @patch("app.routes.webhook.get_openrouter_response", return_value="Resposta mockada")
 @patch("app.routes.webhook.EvolutionAPI.enviar_mensagem")
+@pytest.mark.django_db  # <-- para fazer ao banco de dados django
 def test_webhook_text_message(mock_enviar, mock_llm, client):
     payload = {
         "data": {
