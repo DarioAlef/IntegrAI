@@ -23,6 +23,10 @@ services:
     container_name: fastapi
     # volumes:
     #   - ../app:/app
+    #   - ../core:/core
+    #   - ../integrai:/integrai
+    #   # - ../manage.py:/manage.py
+    #   - ../send_message:/send_message
     ports:
       - 5000:5000
     env_file:
