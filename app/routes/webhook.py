@@ -13,6 +13,7 @@ from app.utils.message import extrair_texto, split_message  # Importa funções 
 from app.services.groq import transcrever_audio_groq  # Função para transcrever áudio usando a API Groq.
 from app.services.openrouter import get_openrouter_response  # Função para obter resposta do modelo LLM.
 from app.services.evolutionAPI import EvolutionAPI  # Classe para enviar mensagens via EvolutionAPI.
+from app.services.contacts import get_contacts, find_number_by_name
 from starlette.concurrency import run_in_threadpool  # Permite rodar funções bloqueantes em threads, sem travar o FastAPI.
 
 
@@ -35,8 +36,10 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
     #     return {"status": "ignored"}
 
     # Verifica se o JSON recebido tem os campos esperados para processar a mensagem.   
+    msg_data = None
     if "data" in data and "message" in data["data"]:
-        msg_data = data["data"]["message"]  # Extrai o dicionário da mensagem.
+        msg_data = data["data"]["message"]
+        print("msg_data:", msg_data)  # Agora só imprime se foi definido
         from_me = data["data"].get("key", {}).get("fromMe", False)  # Checa se foi o bot que enviou.
         message = extrair_texto(msg_data)  # Usa função utilitária para extrair texto da mensagem.
         # Tenta pegar áudio em base64 direto ou dentro do campo audioMessage.
@@ -65,6 +68,25 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
     if sender_number:
         user, _ = await run_in_threadpool(User.objects.get_or_create, phone_number=sender_number)
         # get_or_create retorna uma tupla (objeto, criado?), por isso o _.
+        
+        
+        # Envio de mensagem para contato específico
+    if message and not from_me and user:
+        match = re.match(r"enviar mensagem para (.+?): (.+)", message, re.IGNORECASE)
+        if match:
+            contact_name = match.group(1).strip()
+            msg_to_send = match.group(2).strip()
+            instance = data['instance']
+            instance_key = data['apikey']
+            server_url = os.getenv("SERVER_URL")
+            contacts = get_contacts(instance, instance_key, server_url)
+            number = find_number_by_name(contacts, contact_name)
+            if number:
+                e.enviar_mensagem(msg_to_send, instance, instance_key, number)
+                return {"response": f"Mensagem enviada para {contact_name}!"}
+            else:
+                return {"response": f"Contato '{contact_name}' não encontrado."}    
+        
 
     # Se recebeu áudio e não foi enviado pelo próprio bot e tem usuário válido:
     if audio_data and not from_me and user:
@@ -169,5 +191,6 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
         for part in split_message(response_text):
             e.enviar_mensagem(part, instance, instance_key, sender_number)
         return {"response": response_text}  # Retorna a resposta para quem chamou o webhook
+
 
     return {"status": "ignored"}  # Se não for mensagem relevante, retorna ignorado.
