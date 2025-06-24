@@ -79,13 +79,20 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
             instance = data['instance']
             instance_key = data['apikey']
             server_url = os.getenv("SERVER_URL")
-            contacts = get_contacts(instance, instance_key, server_url)
-            number = find_number_by_name(contacts, contact_name)
-            if number:
-                e.enviar_mensagem(msg_to_send, instance, instance_key, number)
-                return {"response": f"Mensagem enviada para {contact_name}!"}
-            else:
-                return {"response": f"Contato '{contact_name}' não encontrado."}    
+            try:
+                contacts = get_contacts(instance, instance_key, server_url)
+                print("Contatos retornados:", contacts)  # DEBUG
+                number = find_number_by_name(contacts, contact_name)
+                print("Número encontrado para envio:", number)  # DEBUG
+                if number:
+                    # Aqui você pode usar o código do send_message.py diretamente se preferir
+                    e.enviar_mensagem(msg_to_send, instance, instance_key, number)
+                    return {"response": f"Mensagem enviada para {contact_name}!"}
+                else:
+                    return {"response": f"Contato '{contact_name}' não encontrado."}
+            except Exception as ex:
+                print("Erro ao buscar contatos ou enviar mensagem:", ex)
+                return {"response": "Erro ao buscar contatos ou enviar mensagem."}
         
 
     # Se recebeu áudio e não foi enviado pelo próprio bot e tem usuário válido:
