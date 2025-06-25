@@ -25,12 +25,23 @@ def get_openrouter_response(messages, system_prompt=None):
 
     # Lista que irá armazenar as mensagens no formato esperado pela API da Groq.
     groq_messages = []
-    
-    # Se um system_prompt foi fornecido, adiciona como a primeira mensagem (role 'system').
+    # Use o system_prompt passado como argumento, ou um padrão se não for fornecido
     if system_prompt:
         groq_messages.append({
-            "role": "system",  # Define o papel da mensagem como 'system', que serve para orientar o modelo.
-            "content": system_prompt  # O texto do prompt do sistema.
+            "role": "system",
+            "content": system_prompt
+        })
+    else:
+        # Prompt padrão para interpretar comandos de envio de mensagem
+        groq_messages.append({
+            "role": "system",
+            "content": (
+                "Responda sempre em português. Seu nome é IntegrAI. Você é um assistente que interpreta comandos do usuário no WhatsApp. "
+                "Se o usuário pedir para enviar uma mensagem para um contato, extraia o nome do contato e o texto da mensagem. "
+                "Responda sempre em JSON no formato: "
+                "{ \"comando\": \"enviar_mensagem\", \"contato\": \"<nome do contato>\", \"mensagem\": \"<mensagem a ser enviada>\" } "
+                "Se não for um comando, apenas responda normalmente."
+            )
         })
     
     # Para cada mensagem recebida na lista 'messages':

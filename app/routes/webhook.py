@@ -14,6 +14,8 @@ from app.services.groq import transcrever_audio_groq  # Função para transcreve
 from app.services.openrouter import get_openrouter_response  # Função para obter resposta do modelo LLM.
 from app.services.evolutionAPI import EvolutionAPI  # Classe para enviar mensagens via EvolutionAPI.
 from app.services.contacts import get_contacts, find_number_by_name
+from app.services.summary import gerar_resumo
+from core.models import DialogueContext
 from starlette.concurrency import run_in_threadpool  # Permite rodar funções bloqueantes em threads, sem travar o FastAPI.
 
 
@@ -70,7 +72,8 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
         # get_or_create retorna uma tupla (objeto, criado?), por isso o _.
         
         
-        # Envio de mensagem para contato específico
+
+    # Envio de mensagem para contato específico (deve vir ANTES do bloco de mensagem normal!)
     if message and not from_me and user:
         match = re.match(r"enviar mensagem para (.+?): (.+)", message, re.IGNORECASE)
         if match:
@@ -85,7 +88,6 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
                 number = find_number_by_name(contacts, contact_name)
                 print("Número encontrado para envio:", number)  # DEBUG
                 if number:
-                    # Aqui você pode usar o código do send_message.py diretamente se preferir
                     e.enviar_mensagem(msg_to_send, instance, instance_key, number)
                     return {"response": f"Mensagem enviada para {contact_name}!"}
                 else:
@@ -192,6 +194,27 @@ async def webhook(request: Request):  # Função assíncrona que será chamada q
             sender='assistant',
             content=response_text,
             is_voice=False
+        )
+
+        # 1. Recupere todas as mensagens do usuário (ou as N últimas, se preferir)
+        all_msgs = await run_in_threadpool(
+            lambda: list(Message.objects.filter(user=user).order_by('timestamp'))
+        )
+        # 2. Prepare para o resumo (mesmo formato do histórico curto)
+        all_msgs_fmt = []
+        for m in all_msgs:
+            role = 'user' if m.sender == 'user' else 'assistant'
+            all_msgs_fmt.append({"role": role, "content": [{"type": "text", "text": m.content}]})
+
+        # 3. Gere o resumo
+        resumo = gerar_resumo(all_msgs_fmt)
+
+        # 4. Salve ou atualize DialogueContext
+        await run_in_threadpool(
+            DialogueContext.objects.update_or_create,
+            user=user,
+            session_id=str(user.id),  # Use o ID do usuário como session_id (ou outro identificador único)
+            defaults={"context": {"resumo": resumo}}
         )
 
         # Divide a resposta em partes menores (se necessário) e envia cada parte pelo EvolutionAPI.
