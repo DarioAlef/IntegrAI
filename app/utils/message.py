@@ -1,6 +1,12 @@
-
 # Função para extrair o texto de diferentes tipos de mensagens recebidas do WhatsApp
 def extrair_texto(msg_data):
+    # Detecta figurinhas, imagens ou vídeos
+    if "stickerMessage" in msg_data:
+        return "desculpe, ainda não consigo processar esse formato de mídia"
+    if "imageMessage" in msg_data:
+        return "desculpe, ainda não consigo processar esse formato de mídia"
+    if "videoMessage" in msg_data:
+        return "desculpe, ainda não consigo processar esse formato de mídia"
     # Se a mensagem for do tipo simples (texto direto)
     if "conversation" in msg_data:
         return msg_data["conversation"]

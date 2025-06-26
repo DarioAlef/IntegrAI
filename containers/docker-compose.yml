@@ -21,6 +21,7 @@ services:
       context: ..
       dockerfile: Dockerfile
     container_name: fastapi
+    restart: always
     # volumes:
     #   - ../app:/app
     #   - ../core:/core

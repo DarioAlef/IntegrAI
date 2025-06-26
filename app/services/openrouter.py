@@ -61,7 +61,7 @@ def get_openrouter_response(messages, system_prompt=None):
 
     # Envia as mensagens para o modelo da Groq usando o método 'chat.completions.create'.
     completion = client.chat.completions.create(
-        model="deepseek-r1-distill-llama-70b",  # Nome do modelo de linguagem a ser usado.
+        model="meta-llama/llama-4-scout-17b-16e-instruct",  # Nome do modelo de linguagem a ser usado. #deepseek-r1-distill-llama-70b
         messages=groq_messages,  # Lista de mensagens já formatadas.
         temperature=0.6,         # Controla a criatividade da resposta (0 = resposta mais previsível, 1 = mais criativa).
         max_tokens=2048,         # Número máximo de tokens (palavras/frases) na resposta.

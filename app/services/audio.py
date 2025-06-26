@@ -1,19 +1,56 @@
-import io
-import ffmpeg
+import base64
+import requests
+from app.services.whisper_audio import transcrever_audio_groq
+from app.utils.message import split_message
+from app.services.openrouter import get_openrouter_response
+from core.models import Message
+from starlette.concurrency import run_in_threadpool
 
-# Função para converter áudio OPUS (WhatsApp) para WAV usando ffmpeg
-def convert_opus_to_wav(audio_bytes):
-    in_file = io.BytesIO(audio_bytes)  # Cria um arquivo em memória com os bytes do áudio OPUS
-    out_file = io.BytesIO()  # Cria um arquivo em memória para saída WAV
-    process = (
-        ffmpeg
-        .input('pipe:0')  # Entrada via pipe (stdin)
-        .output('pipe:1', format='wav')  # Saída via pipe (stdout) no formato WAV
-        .run_async(pipe_stdin=True, pipe_stdout=True, pipe_stderr=True)  # Executa ffmpeg de forma assíncrona
+def extrair_audio_data(msg_data):
+    audio_base64 = msg_data.get("base64") or msg_data.get("audioMessage", {}).get("audio")
+    if audio_base64:
+        return base64.b64decode(audio_base64)
+    if "audioMessage" in msg_data and "url" in msg_data["audioMessage"]:
+        audio_url = msg_data["audioMessage"]["url"]
+        audio_response = requests.get(audio_url)
+        return audio_response.content
+    return None
+
+async def processar_audio(data, user, e, instance, instance_key, sender_number):
+    msg_data = data["data"]["message"]
+    audio_data = extrair_audio_data(msg_data)
+    if not audio_data:
+        return None
+
+    texto_transcrito = transcrever_audio_groq(audio_data)
+    msg_user = await run_in_threadpool(
+        Message.objects.create,
+        user=user,
+        sender='user',
+        content=texto_transcrito,
+        is_voice=True
     )
-    output, err = process.communicate(input=in_file.read())  # Envia os dados do áudio para ffmpeg e recebe a saída
-    out_file.write(output)  # Escreve o áudio convertido no arquivo em memória
-    out_file.seek(0)  # Volta o ponteiro para o início do arquivo
-    out_file.name = "audio.wav"  # Define o nome do arquivo em memória (necessário para algumas APIs)
-    # Não salva mais o arquivo em disco
-    return out_file  # Retorna o arquivo WAV em memória
+
+    # Recupera as últimas 10 mensagens desse usuário (do mais antigo para o mais recente).
+    history = await run_in_threadpool(
+        lambda: list(Message.objects.filter(user=user).order_by('-timestamp')[:10][::-1])
+    )
+    messages = []
+    for m in history:
+        role = 'user' if m.sender == 'user' else 'assistant'
+        messages.append({"role": role, "content": [{"type": "text", "text": m.content}]})
+
+    resposta = get_openrouter_response(messages)
+    resposta = resposta.strip()
+
+    await run_in_threadpool(
+        Message.objects.create,
+        user=user,
+        sender='assistant',
+        content=resposta,
+        is_voice=False
+    )
+
+    for part in split_message(resposta):
+        e.enviar_mensagem(part, instance, instance_key, sender_number)
+    return resposta
