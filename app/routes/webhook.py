@@ -195,3 +195,5 @@ async def webhook(request: Request):
 
 
     return {"status": "ignored"}  # Se não for mensagem relevante, retorna ignorado.
+
+#
