@@ -9,3 +9,6 @@
 
 __pycache__/
 *.pyc
+# Estes devem estar na pasta app/services/calendar/
+*credentials.json
+*token.json

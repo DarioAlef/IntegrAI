@@ -10,7 +10,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')  # Define q
 django.setup()  # Inicializa o Django para que possamos usar seus recursos fora do padrão (como em scripts FastAPI).
 from core.models import User, Message  # Importa os modelos User e Message do Django para manipular usuários e mensagens no banco.
 from app.utils.message import extrair_texto, split_message  # Importa funções utilitárias para extrair texto e dividir mensagens longas.
-from app.services.groq import transcrever_audio_groq  # Função para transcrever áudio usando a API Groq.
+from app.services.command_interpretation import transcrever_audio_groq  # Função para transcrever áudio usando a API Groq.
 from app.services.openrouter import get_openrouter_response  # Função para obter resposta do modelo LLM.
 from app.services.evolutionAPI import EvolutionAPI  # Classe para enviar mensagens via EvolutionAPI.
 from starlette.concurrency import run_in_threadpool  # Permite rodar funções bloqueantes em threads, sem travar o FastAPI.

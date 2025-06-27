@@ -57,6 +57,21 @@ class User(ModelBase):
         blank=True
     )  # Para armazenar o estado
 
+    is_scheduling = models.BooleanField(
+        default=False,
+        help_text="Indica se o usuário está no processo de agendamento"
+    )
+
+    is_editing_event = models.BooleanField(
+        default=False,
+        help_text="Indica se o usuário está editando um evento"
+    )
+
+    current_event_data = models.JSONField(
+        default=dict,
+        help_text="Armazena os dados do evento atual que está sendo agendado ou editado"
+    )
+
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
 
