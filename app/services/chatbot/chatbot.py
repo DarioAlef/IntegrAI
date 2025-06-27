@@ -10,7 +10,7 @@ load_dotenv()
 # Obtém o valor da variável de ambiente 'GROQ_API_KEY' (sua chave de API da Groq) e armazena na variável 'api_key'.
 api_key = os.getenv("GROQ_API_KEY")  # Use a variável do seu .env
 
-def get_openrouter_response(messages, system_prompt=None):
+def get_llm_response(messages):
     """
     Função para enviar mensagens para o modelo de linguagem da Groq e receber uma resposta.
     - messages: lista de dicionários, cada um representando uma mensagem no formato [{"role": "user", "content": "mensagem"}]
@@ -25,24 +25,16 @@ def get_openrouter_response(messages, system_prompt=None):
 
     # Lista que irá armazenar as mensagens no formato esperado pela API da Groq.
     groq_messages = []
-    # Use o system_prompt passado como argumento, ou um padrão se não for fornecido
-    if system_prompt:
-        groq_messages.append({
-            "role": "system",
-            "content": system_prompt
-        })
-    else:
-        # Prompt padrão para interpretar comandos de envio de mensagem
-        groq_messages.append({
-            "role": "system",
-            "content": (
-                "Responda sempre em português. Seu nome é IntegrAI. Você é um assistente que interpreta comandos do usuário no WhatsApp. "
-                "Se o usuário pedir para enviar uma mensagem para um contato, extraia o nome do contato e o texto da mensagem. "
-                "Responda sempre em JSON no formato: "
-                "{ \"comando\": \"enviar_mensagem\", \"contato\": \"<nome do contato>\", \"mensagem\": \"<mensagem a ser enviada>\" } "
-                "Se não for um comando, apenas responda normalmente."
-            )
-        })
+    groq_messages.append({
+        "role": "system",
+        "content": (
+            "Responda sempre em português. Seu nome é IntegrAI. Você é um assistente que interpreta comandos do usuário no WhatsApp. "
+            "Se o usuário pedir para enviar uma mensagem para um contato, extraia o nome do contato e o texto da mensagem. "
+            "Responda sempre em JSON no formato: "
+            "{ \"comando\": \"enviar_mensagem\", \"contato\": \"<nome do contato>\", \"mensagem\": \"<mensagem a ser enviada>\" } "
+            "Se não for um comando, apenas responda normalmente."
+        )
+    })
     
     # Para cada mensagem recebida na lista 'messages':
     for m in messages:

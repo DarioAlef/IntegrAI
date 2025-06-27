@@ -1,4 +1,7 @@
-from app.services.openrouter import get_openrouter_response
+from app.services.chatbot.chatbot import get_llm_response
+from starlette.concurrency import run_in_threadpool
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
 
 def gerar_resumo(messages):
     prompt = (
@@ -9,5 +12,5 @@ def gerar_resumo(messages):
         [f"{m['role']}: {m['content'][0]['text']}" for m in messages if m.get("content")]
     )
     full_prompt = prompt + texto
-    resumo = get_openrouter_response([{"role": "user", "content": full_prompt}])
+    resumo = get_llm_response([{"role": "user", "content": full_prompt}])
     return resumo

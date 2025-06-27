@@ -9,12 +9,12 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')  # Define qual arquivo de configurações do Django será usado.
 django.setup()  # Inicializa o Django para que possamos usar seus recursos fora do padrão (como em scripts FastAPI).
 from core.models import User, Message, DialogueContext 
-from app.utils.message import extrair_texto, split_message 
-from app.services.openrouter import get_openrouter_response  
-from app.services.evolutionAPI import EvolutionAPI 
-from app.services.contacts import get_contacts, find_number_by_name
-from app.services.summary import gerar_resumo
-from app.services.audio import processar_audio
+from app.utils.extract_text import extrair_texto, split_message 
+from app.services.chatbot.chatbot import get_llm_response  
+from app.services.conversation.evolutionAPI import EvolutionAPI 
+from app.services.conversation.contacts import get_contacts, find_number_by_name
+from app.services.context.summary import gerar_resumo
+from app.services.transcription.audio_processing import processar_audio
 from starlette.concurrency import run_in_threadpool  # Permite rodar funções bloqueantes em threads, sem travar o FastAPI.
 
 
@@ -74,6 +74,10 @@ async def webhook(request: Request):
 
 
 
+
+
+
+
     # Envio de mensagem para contato específico (deve vir ANTES do bloco de mensagem normal!)
     if message and not from_me and user:
         match = re.match(r"enviar mensagem para (.+?): (.+)", message, re.IGNORECASE)
@@ -89,7 +93,7 @@ async def webhook(request: Request):
                 number = find_number_by_name(contacts, contact_name)
                 print("Número encontrado para envio:", number)  # DEBUG
                 if number:
-                    e.enviar_mensagem(msg_to_send, instance, instance_key, number)
+                    e.enviar_mensagem(msg_to_send, number)
                     return {"response": f"Mensagem enviada para {contact_name}!"}
                 else:
                     return {"response": f"Contato '{contact_name}' não encontrado."}
@@ -97,6 +101,10 @@ async def webhook(request: Request):
                 print("Erro ao buscar contatos ou enviar mensagem:", ex)
                 return {"response": "Erro ao buscar contatos ou enviar mensagem."}
         
+
+
+
+
 
 
 
@@ -136,9 +144,8 @@ async def webhook(request: Request):
             messages.append({"role": role, "content": [{"type": "text", "text": m.content}]})
 
         # Chama o modelo LLM para gerar a resposta, passando o system prompt como argumento.
-        response_text = get_openrouter_response(
-            messages,
-            system_prompt="Responda sempre em português. Seu nome é IntegrAI"
+        response_text = get_llm_response(
+            messages
         )
 
         # Remove blocos <think>...</think> da resposta usando expressão regular.
@@ -183,7 +190,7 @@ async def webhook(request: Request):
 
         # Divide a resposta em partes menores (se necessário) e envia cada parte pelo EvolutionAPI.
         for part in split_message(response_text):
-            e.enviar_mensagem(part, instance, instance_key, sender_number)
+            e.enviar_mensagem(part, sender_number)
         return {"response": response_text}  # Retorna a resposta para quem chamou o webhook
 
 

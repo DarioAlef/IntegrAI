@@ -1,8 +1,8 @@
 import base64
 import requests
-from app.services.whisper_audio import transcrever_audio_groq
-from app.utils.message import split_message
-from app.services.openrouter import get_openrouter_response
+from app.services.transcription.audio_transcription import transcrever_audio_groq
+from app.utils.extract_text import split_message
+from app.services.chatbot.chatbot import get_llm_response
 from core.models import Message
 from starlette.concurrency import run_in_threadpool
 
@@ -16,7 +16,7 @@ def extrair_audio_data(msg_data):
         return audio_response.content
     return None
 
-async def processar_audio(data, user, e, instance, instance_key, sender_number):
+async def processar_audio(data, user, e, sender_number):
     msg_data = data["data"]["message"]
     audio_data = extrair_audio_data(msg_data)
     if not audio_data:
@@ -40,7 +40,7 @@ async def processar_audio(data, user, e, instance, instance_key, sender_number):
         role = 'user' if m.sender == 'user' else 'assistant'
         messages.append({"role": role, "content": [{"type": "text", "text": m.content}]})
 
-    resposta = get_openrouter_response(messages)
+    resposta = get_llm_response(messages)
     resposta = resposta.strip()
 
     await run_in_threadpool(
@@ -52,5 +52,5 @@ async def processar_audio(data, user, e, instance, instance_key, sender_number):
     )
 
     for part in split_message(resposta):
-        e.enviar_mensagem(part, instance, instance_key, sender_number)
+        e.enviar_mensagem(part, sender_number)
     return resposta
