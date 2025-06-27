@@ -4,5 +4,7 @@ RUN apt-get update && apt-get install -y ffmpeg
 COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+# ENV PYTHONPATH=/app:/app/core:/app/integrai:/app/send_message
+ENV PYTHONPATH=/app:/core:/integrai:/send_message
+# RUN python manage.py migrate
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]

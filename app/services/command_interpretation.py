@@ -4,7 +4,6 @@ import json
 import os
 from typing import Dict, List, Union
 from dotenv import load_dotenv
-from app.services.audio import convert_opus_to_wav  # Importa a função de conversão
 from groq import Groq  # Importa o cliente Groq
 from app.utils.now import now  # Importa a função de data e hora atual
 

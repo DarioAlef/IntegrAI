@@ -1,0 +1,50 @@
+# Diretórios e arquivos comuns para ignorar em builds Docker Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.env
+.env/
+.venv/
+.venv
+.idea/
+.vscode/
+*.egg-info/
+dist/
+build/
+*.bak
+.DS_Store
+*.swp
+*.swo
+*.orig
+*.tmp
+*.old
+*.coverage
+.coverage.*
+.cache/
+*.mypy_cache/
+*.pytest_cache/
+node_modules/
+*.tar.gz
+*.zip
+*.tgz
+*.gz
+*.egg
+# Arquivos de configuração de IDE
+*.iml
+*.sublime-workspace
+*.sublime-project
+# Arquivos de mídia temporários
+*.mp3
+*.mp4
+*.wav
+*.opus
+*.png
+*.jpg
+*.jpeg
+*.gif
+# Docker
+docker-compose.override.yml

@@ -56,5 +56,11 @@ jobs:
           pip install flake8
           flake8 . || true
 
-      - name: Build Docker image (opcional)
+      - name: Build Docker image
         run: docker build -t integrai-test .  # Builda a imagem Docker localmente para garantir que o Dockerfile está correto
+
+      - name: Run pytest
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          pytest --maxfail=1 --disable-warnings -v  # Executa os testes com pytest, parando no primeiro erro e desabilitando avisos

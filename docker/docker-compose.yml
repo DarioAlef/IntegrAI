@@ -19,8 +19,13 @@ services:
       context: ..
       dockerfile: Dockerfile
     container_name: fastapi
+    restart: always
     # volumes:
     #   - ../app:/app
+    #   - ../core:/core
+    #   - ../integrai:/integrai
+    #   # - ../manage.py:/manage.py
+    #   - ../send_message:/send_message
     ports:
       - 5000:5000
     env_file:
