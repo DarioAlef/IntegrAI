@@ -1,3 +1,8 @@
+"""
+Módulo centralizado para lidar com todas as operações relacionadas a áudio
+Move toda a lógica de áudio do webhook para a pasta transcription
+"""
+
 import base64
 import requests
 from app.services.transcription.audio_transcription import transcrever_audio_groq
@@ -6,23 +11,11 @@ from app.services.chatbot.chatbot import get_llm_response
 from core.models import Message
 from starlette.concurrency import run_in_threadpool
 
-def detectar_audio_na_mensagem(msg_data):
-    """
-    Detecta se existe áudio na mensagem e retorna True/False
-    """
-    audio_base64 = msg_data.get("base64") or msg_data.get("audioMessage", {}).get("audio")
-    if audio_base64:
-        return True
-    if "audioMessage" in msg_data and "url" in msg_data["audioMessage"]:
-        return True
-    return False
 
 def processar_deteccao_audio_webhook(data):
     """
-    Processa a detecção de áudio no webhook e retorna as variáveis necessárias
-    Retorna: (audio_data, tem_audio)
+    Processa a detecção de áudio no webhook e retorna True/False
     """
-    audio_data = None
     tem_audio = False
     
     if "data" in data and "message" in data["data"]:
@@ -30,36 +23,35 @@ def processar_deteccao_audio_webhook(data):
         
         # Procura se tem áudio em msg_data (em base64 ou dentro do campo audioMessage).
         audio_base64 = msg_data.get("base64") or msg_data.get("audioMessage", {}).get("audio")
-        # Se encontrou áudio em base64, decodifica para bytes.
-        audio_data = base64.b64decode(audio_base64) if audio_base64 else None
-        
-        # Se não encontrou áudio em base64, mas existe o campo audioMessage, tenta baixar o áudio via URL.
-        if not audio_data and "audioMessage" in msg_data:
-            audio_url = msg_data["audioMessage"]["url"]  # Pega a URL do áudio.
-            audio_response = requests.get(audio_url)  # Baixa o arquivo de áudio.
-            audio_data = audio_response.content  # Guarda os bytes do áudio baixado.
-        
-        tem_audio = audio_data is not None
+        if audio_base64:
+            tem_audio = True
+        elif "audioMessage" in msg_data and "url" in msg_data["audioMessage"]:
+            tem_audio = True
     
-    return audio_data, tem_audio
+    return tem_audio
 
-def extrair_audio_data(msg_data):
+
+async def processar_audio_completo(data, user, e, sender_number):
+    """
+    Função completa para processar áudio (transcrição + resposta + envio)
+    """
+    msg_data = data["data"]["message"]
+    
+    # Extrai os dados do áudio
     audio_base64 = msg_data.get("base64") or msg_data.get("audioMessage", {}).get("audio")
     if audio_base64:
-        return base64.b64decode(audio_base64)
-    if "audioMessage" in msg_data and "url" in msg_data["audioMessage"]:
+        audio_data = base64.b64decode(audio_base64)
+    elif "audioMessage" in msg_data and "url" in msg_data["audioMessage"]:
         audio_url = msg_data["audioMessage"]["url"]
         audio_response = requests.get(audio_url)
-        return audio_response.content
-    return None
-
-async def processar_audio(data, user, e, sender_number):
-    msg_data = data["data"]["message"]
-    audio_data = extrair_audio_data(msg_data)
-    if not audio_data:
+        audio_data = audio_response.content
+    else:
         return None
 
+    # Transcreve o áudio
     texto_transcrito = transcrever_audio_groq(audio_data)
+    
+    # Salva a mensagem do usuário
     msg_user = await run_in_threadpool(
         Message.objects.create,
         user=user,
@@ -68,18 +60,21 @@ async def processar_audio(data, user, e, sender_number):
         is_voice=True
     )
 
-    # Recupera as últimas 10 mensagens desse usuário (do mais antigo para o mais recente).
+    # Recupera histórico de mensagens
     history = await run_in_threadpool(
         lambda: list(Message.objects.filter(user=user).order_by('-timestamp')[:10][::-1])
     )
+    
     messages = []
     for m in history:
         role = 'user' if m.sender == 'user' else 'assistant'
         messages.append({"role": role, "content": [{"type": "text", "text": m.content}]})
 
+    # Gera resposta do LLM
     resposta = get_llm_response(messages)
     resposta = resposta.strip()
 
+    # Salva a resposta do assistente
     await run_in_threadpool(
         Message.objects.create,
         user=user,
@@ -88,6 +83,25 @@ async def processar_audio(data, user, e, sender_number):
         is_voice=False
     )
 
+    # Envia a resposta em partes
     for part in split_message(resposta):
         e.enviar_mensagem(part, sender_number)
+    
     return resposta
+
+
+async def processar_audio_webhook_completo(data, user, e, sender_number, from_me=False):
+    """
+    Função completa que encapsula toda a lógica de processamento de áudio do webhook
+    Retorna: (processou_audio, resposta)
+    """
+    # Verifica se tem áudio
+    tem_audio = processar_deteccao_audio_webhook(data)
+    
+    # Se tem áudio, não é mensagem própria e tem usuário válido
+    if tem_audio and not from_me and user:
+        resposta = await processar_audio_completo(data, user, e, sender_number)
+        if resposta:
+            return True, {"response": resposta}
+    
+    return False, None
