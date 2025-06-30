@@ -1,4 +1,4 @@
-import re
+import re # Para trabalhar com expressões regulares (ex: remover tags <think>).
 import os
 import django
 # Inicializa o Django para permitir uso dos modelos fora do padrão Django.

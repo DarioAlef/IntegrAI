@@ -34,7 +34,7 @@ def get_credentials() -> Credentials:
     return creds
 
 
-def get_events(user_email: str) -> List[Dict]:
+def get_user_events(user_email: str) -> List[Dict]:
     """Retorna os próximos 10 eventos do calendário do usuário, filtrando por e-mail do organizador"""
     try:
         creds = get_credentials()

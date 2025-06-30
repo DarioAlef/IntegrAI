@@ -6,7 +6,7 @@ django.setup()
 from django.db.models import Count, Window
 from django.db.models.functions import RowNumber
 from fastapi.concurrency import run_in_threadpool
-from core.models import DialogueContext, Message, User
+from core.models import DialogueContext, Event, Message, User
 django.setup()
 
 
@@ -68,3 +68,10 @@ async def retrieve_history(user: User, quantity: int):
         return history, total
 
     return await run_in_threadpool(_get_data) 
+
+async def store_event(user: User, event_data: dict):
+    event = await run_in_threadpool(
+        lambda: Event.objects.create(user=user, **event_data)
+    )
+    event.save()
+    print({'status': 'Success: event stored.'})

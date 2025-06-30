@@ -1,29 +1,19 @@
 import os  # Importa o módulo para manipulação de variáveis de ambiente.
 from fastapi import APIRouter, Request  # Importa o roteador e o objeto de requisição do FastAPI.
-import base64  # Para decodificar áudios em base64.
-import requests  # Para fazer requisições HTTP (ex: baixar arquivos de áudio).
-import re  # Para trabalhar com expressões regulares (ex: remover tags <think>).
-import django
-
 from app.services.message_handlers.chatbot_handler import chatbot_response
 from app.services.message_handlers.is_command_handler import command_handler
 from app.services.message_handlers.is_text_handler import processar_texto
-from app.utils.validation import valid_user_message  # Para inicializar o Django fora do padrão (usando em scripts FastAPI).
-
-# Inicializa o Django para permitir uso dos modelos fora do padrão Django.
+from app.utils.validation import valid_user_message  
+# Para inicializar o Django fora do padrão (usando em scripts FastAPI).
+import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
 django.setup()
 
 # Importa os modelos e funções utilitárias do projeto.
 from app.services.message_handlers.authentication import authenticate
-from core.models import User, Message, DialogueContext
-from app.utils.text import split_message
-from app.services.chatbot.chatbot import get_llm_response
 from app.services.conversation.evolutionAPI import EvolutionAPI
-
-from app.services.context.summary import gerar_resumo
 from app.services.message_handlers.is_audio_handler import processar_audio
-from starlette.concurrency import run_in_threadpool  # Permite rodar funções bloqueantes em threads assíncronas.
+
 
 # Cria um roteador FastAPI para definir rotas/endpoints.
 router = APIRouter()
@@ -81,8 +71,8 @@ async def webhook(request: Request):
     # ==============================================================================================
     # 5. Iniciar o serviço.
     # ==============================================================================================
-        command_handler(message)
-        chatbot_response(authenticated_user, sender_number)
+        if not command_handler(authenticated_user, message, sender_number):
+            chatbot_response(authenticated_user, sender_number)
 
     # Se nenhuma das condições acima for satisfeita, retorna status ignorado.
     return {"status": "ignored"}  # Se não for mensagem relevante, retorna ignorado.

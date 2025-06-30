@@ -170,16 +170,16 @@ class Event(ModelBase):
         on_delete=models.CASCADE
     )
     
-    title = models.CharField(
+    event_summary = models.CharField(
         max_length=255, 
         null=False
     )
     
-    start_time = models.DateTimeField(
+    event_start = models.DateTimeField(
         null=False
     )
     
-    end_time = models.DateTimeField(
+    event_end = models.DateTimeField(
         null=True
     )
     
@@ -203,6 +203,11 @@ class Event(ModelBase):
         max_length=10,
         choices=[('private', 'Private'), ('public', 'Public')],
         default='private'
+    )
+
+    reminders = models.JSONField(
+            default=list,
+            help_text="Lista de lembretes para o evento em minutos"
     )
 
     def __str__(self):

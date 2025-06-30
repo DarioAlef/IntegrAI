@@ -1,10 +1,3 @@
-# o arquivo behavior.py contém o comportamento da interação com o usuário, com funções que 
-# controlam esse fluxo. Aqui você implementa a lógica de decisão: verificar se o usuário está
-# cadastrado, qual o próximo passo, qual ação chamar, etc.
-# Usa funções de actions.py para executar tarefas.
-# Exemplo: check_user, funções que processam mensagens recebidas e decidem o que fazer.
-
-
 # Inicializa o Django para permitir uso dos modelos fora do padrão Django.
 import os
 import django

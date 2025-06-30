@@ -1,5 +1,5 @@
-import base64
-import requests
+import base64  # Para decodificar áudios em base64.
+import requests # Para fazer requisições HTTP (ex: baixar arquivos de áudio).
 
 def extrair_audio_data(msg_data):
     # Procura se tem áudio em msg_data (em base64 ou dentro do campo audioMessage).
