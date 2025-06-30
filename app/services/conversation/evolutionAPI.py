@@ -12,11 +12,14 @@ class EvolutionAPI():
         self.server_url = os.getenv("SERVER_URL")
         self.instance = os.getenv("INSTANCE")
         self.instance_key = os.getenv("AUTHENTICATION_API_KEY")
+        self.headers = {
+            "apikey": self.instance_key,           
+            "Content-Type": "application/json"
+        }
         pass
 
     # Método para o bot enviar uma mensagem de texto via Evolution API.
-    def enviar_mensagem(self, message, sender_number):
-        
+    async def enviar_mensagem(self, message, sender_number):
 
         url = f"http://{self.server_url}/message/sendText/{self.instance}"
 
@@ -51,13 +54,10 @@ class EvolutionAPI():
         # },      
         }
 
-        headers = {
-            "apikey": self.instance_key,           
-            "Content-Type": "application/json"
-        }
+        
 
         # Envia a requisição POST para o Evolution API
-        response = requests.post(url, json=payload, headers=headers)
+        response = await requests.post(url, json=payload, headers=self.headers)
 
         return response
     
@@ -75,12 +75,8 @@ class EvolutionAPI():
             # },
             "audioMessage": {"audio": arq_b64}
         }
-        headers = {
-            "apikey": self.api_key,
-            "Content-Type": "application/json"
-        }
 
-        response = requests.request("POST", url, json=payload, headers=headers)
+        response = requests.request("POST", url, json=payload, headers=self.headers)
 
         print(response.text)
     
@@ -101,11 +97,7 @@ class EvolutionAPI():
                 "media": arq_b64
             }
         }
-        headers = {
-            "apikey": self.api_key,
-            "Content-Type": "application/json"
-        }
 
-        response = requests.request("POST", url, json=payload, headers=headers)
+        response = requests.request("POST", url, json=payload, headers=self.headers)
 
         print(response.text)
