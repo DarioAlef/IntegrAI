@@ -1,6 +1,7 @@
 # Inicializa o Django para permitir uso dos modelos fora do padrão Django.
 import os
 import django
+from fastapi.concurrency import run_in_threadpool
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
 django.setup()
 
@@ -13,10 +14,13 @@ from app.utils.validation import is_valid_name_and_email
 
 
 
-def authenticate(phone_number, message) -> User | None:  
+async def authenticate(phone_number, message) -> User | None:  
     messenger = EvolutionAPI()
     try:
-        user = User.objects.get(phone_number=phone_number)
+        
+        user = await run_in_threadpool(
+             User.objects.get, phone_number=phone_number
+        )
         if user.waiting_user_data == "waiting_for_name_and_email":
             if valid_data := is_valid_name_and_email(message):
                 update_user(user, valid_data['name'], valid_data['email'])

@@ -20,7 +20,7 @@ async def chatbot_response(user: User, sender_number):
     messages = []
     for m in short_history:
         role = 'user' if m.sender == 'user' else 'assistant' # Define o papel da mensagem.
-        messages.append({"role": role, "content": [{"type": "text", "text": m.content}]})
+        messages.append({"role": role, "content": m.content})
     
     
     # (Atualiza se oportuno) e recupera o contexto de diálogo de longo prazo.
