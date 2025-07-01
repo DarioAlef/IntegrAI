@@ -54,7 +54,7 @@ async def appointment_handler(auth_user: User, message, sender_number):
 
             if invalid_params:
                 auth_user.current_event_data = current_event_data  # Dados do evento validados.
-                mensagem = f"Identifiquei que você quer agendar um evento:\n\n{current_event_data}\n\n Mas me perdi no(s) campos:\n\n {invalid_params}.\n\nMe mande os valores corrigidos para que eu possa agendar o evento. Tou te escutando!"
+                mensagem = f"Entendi que você quer agendar um evento:\n\n{current_event_data}\n\nMas tive dúvidas nos campos:\n\n{invalid_params}.\n\nMe envie os dados corrigidos pra continuar. Tô te escutando!"
                 if await messenger.enviar_mensagem(mensagem, sender_number):
                     auth_user.appointment_message_counter += 2 # Se nada bugar, quando o usuário vier de novo vão ser mais 2 mensagens da conversa
                 else:

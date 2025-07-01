@@ -58,36 +58,27 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
         }}
         }},
         {{
-            "conversation": [
+        "conversation": [
             {{"role": "user", "content": "Agende uma consulta com o Dr. João"}},
-            {{"role": "assistant", "content": "Identifiquei que você quer agendar um evento:\n\n{{"event_summary": "Consulta com o Dr. João"}}\n\n Mas me perdi no(s) campos:\n\n {{"event_start": 'Este campo é obrigatório.'}}.\n\nManda os valores corrigidos para que eu possa agendar o evento... tou te escutando:"}},
+            {{"role": "assistant", "content": "Identifiquei que você quer agendar um evento:\n\n{{"event_summary": "Consulta com o Dr. João"}}\n\nMas tive dúvidas nos campos:\n\n{{"event_start": 'Este campo é obrigatório.'}}.\n\nMe envie os dados corrigidos pra continuar. Tô te escutando!"}}
             {{"role": "user", "content": "na terça-feira às 18h"}},
-            ],
-            "output": {{
+        ],
+        "output": {{
             "event_summary": "Consulta com o Dr. João",
             "event_start": "2025-07-01T18:00:00-04:00"
-            }}
+        }}
         }},
         {{
-        "mensagem": "Marca dentista quarta-feira às 9h e bota pra lembrar na terça e 1 hora antes.",
+        "conversation": [
+            {{"role": "user", "content": "Marca dentista e bota pra lembrar na terça e 1 hora antes."}},
+            {{"role": "assistant", "content": "Entendi que você quer agendar um evento:\n\n{{\"event_summary\": \"Dentista\"}}\n\nMas tive dúvidas nos campos:\n\n{{\"event_start\": \"'Este campo é obrigatório.'\"}}\n\nMe envie os dados corrigidos pra continuar. Tô te escutando!"}},
+            {{"role": "user", "content": "Tinha me esquecido, é quarta-feira às 9h"}}
+        ],
         "output": {{
             "event_summary": "Dentista",
             "event_start": "2025-07-02T09:00:00-04:00",
-            "event_end": "2025-07-02T10:00:00-04:00",
-            "description": "",
-            "location": "",
-            "attendees": [],
-            "visibility": "private",
             "reminders": [60, 1440]
-            }}
-        }},
-        {{
-            "missing_data": event_start,
-            "mensagem": "18h no Golden Gol",
-            "output": {{
-                "event_start": "2025-07-01T18:00:00-04:00",
-                "location": "Golden Gol"
-            }}
+        }}
         }}
     """
 

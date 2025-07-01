@@ -22,11 +22,11 @@ def valid_user_message(message, from_me, user_authenticated):
 
 
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.utils.now import now
 
-def validate_event_data(event_data):
+def validate_event_data(event_data: dict):
 
     current_event_data = {}
     invalid_params = {}
@@ -60,8 +60,12 @@ def validate_event_data(event_data):
         except ValueError:
             invalid_params['event_end'] = 'Formato de data inválido (use ISO 8601).'
     else:
-        invalid_params['event_start'] = 'Este campo é obrigatório.'
-        start = None  # Para evitar erro nas próximas validações
+        if start:
+            # Se não houver event_end mas start for válido, define como +1 hora
+            end = start + timedelta(hours=1)
+            current_event_data['event_end'] = end.isoformat()
+        else:
+            invalid_params['event_start'] = 'Este campo é obrigatório.'
 
     # 3. Campos opcionais
     for key in ['description', 'location', 'attendees', 'reminders']:

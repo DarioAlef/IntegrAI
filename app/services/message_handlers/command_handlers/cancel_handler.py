@@ -3,9 +3,6 @@ import os
 import django
 from fastapi.concurrency import run_in_threadpool
 
-from app.services.interpretation.appointment_interpretation import interpretar_agendamento
-from app.services.interpretation.utils_interpretation import interpretar_confirmacao
-from app.utils.validation import validate_event_data
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
 django.setup()
 
