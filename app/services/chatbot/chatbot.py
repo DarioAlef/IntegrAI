@@ -10,7 +10,7 @@ load_dotenv()
 # Obtém o valor da variável de ambiente 'GROQ_API_KEY' (sua chave de API da Groq) e armazena na variável 'api_key'.
 api_key = os.getenv("GROQ_API_KEY")  # Use a variável do seu .env
 
-def get_llm_response(messages):
+def get_llm_response(messages, context=None):
     """
     Função para enviar mensagens para o modelo de linguagem da Groq e receber uma resposta.
     - messages: lista de dicionários, cada um representando uma mensagem no formato [{"role": "user", "content": "mensagem"}]
@@ -23,28 +23,23 @@ def get_llm_response(messages):
     # Cria um cliente Groq usando a chave da API. Esse cliente será usado para enviar requisições para o modelo.
     client = Groq(api_key=api_key)
 
+
+
     # Lista que irá armazenar as mensagens no formato esperado pela API da Groq.
     groq_messages = []
     groq_messages.append({
         "role": "system",
         "content": (
-            "Responda sempre em português. Seu nome é IntegrAI. Você é um assistente que interpreta comandos do usuário no WhatsApp. "
-            "Se o usuário pedir para enviar uma mensagem para um contato, extraia o nome do contato e o texto da mensagem. "
-            "Responda sempre em JSON no formato: "
-            "{ \"comando\": \"enviar_mensagem\", \"contato\": \"<nome do contato>\", \"mensagem\": \"<mensagem a ser enviada>\" } "
-            "Se não for um comando, apenas responda normalmente."
+            "Responda sempre em português. Seu nome é IntegrAI. Você é um assistente que responde mensagens do usuário no WhatsApp."
+            "Abaixo uma contextualização resumida da sua interação anterior com o usuário: \n"
+            f"{context}\n"
+            "Continue a conversa com base nesse histórico e no que vier a seguir."
         )
     })
     
     # Para cada mensagem recebida na lista 'messages':
     for m in messages:
-        # Se o campo 'content' for uma lista (ex: [{"type": "text", "text": ...}]), junta todos os textos em uma única string.
-        if isinstance(m.get("content"), list):
-            # Percorre cada item da lista e pega o valor do campo 'text', juntando tudo em uma string separada por espaço.
-            content = " ".join([c.get("text", "") for c in m["content"]])
-        else:
-            # Se não for lista, pega o valor diretamente.
-            content = m.get("content", "")
+        content = m.get("content", "")
         # Adiciona a mensagem convertida para o formato esperado pela Groq.
         groq_messages.append({
             "role": m.get("role", "user"),  # Define o papel da mensagem ('user' ou 'assistant').
