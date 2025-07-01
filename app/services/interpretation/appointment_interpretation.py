@@ -11,7 +11,7 @@ load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
 
 
-def interpretar_agendamento(mensagem: str) -> Union[Dict[str, Any], None]:
+def interpretar_agendamento(mensagem: str, missing_data: Dict[str, Any]) -> Union[Dict[str, Any], None]:
 
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
     prompt = f"""
@@ -35,6 +35,8 @@ def interpretar_agendamento(mensagem: str) -> Union[Dict[str, Any], None]:
     ## Considere a Data e Hora atuais:
     "{now}"
 
+    ## Considere o current_event_data -> se não estiver vazio, é porque já há dados de evento em andamento e o usuário pode estar corrigindo ou complementando esses dados. Use esses dados como base para completar as informações do evento de acordo com a mensagem.
+
     ## Regras:
     - O agendamento deve ser sempre para o **futuro**, nunca para o passado.
     - Quando a mensagem mencionar um dia da semana (ex: segunda, terça, quarta), converta sempre para a próxima ocorrência futura desse dia considerando a data atual."
@@ -46,7 +48,7 @@ def interpretar_agendamento(mensagem: str) -> Union[Dict[str, Any], None]:
 
     ## Exemplos de mensagens e como devem ser interpretadas:
         {{
-        "input": "Marca reunião com o time de produto amanhã às 14h no Google Meet",
+        "mensagem": "Marca reunião com o time de produto amanhã às 14h no Google Meet",evento
         "output": {{
             "event_summary": "Reunião com o time de produto",
             "event_start": "2025-06-30T14:00:00-04:00",
@@ -54,14 +56,14 @@ def interpretar_agendamento(mensagem: str) -> Union[Dict[str, Any], None]:
             }}
         }},
         {{
-        "input": "Agende uma consulta com o Dr. João na terça-feira às 9h",
+        "mensagem": "Agende uma consulta com o Dr. João na terça-feira às 9h",
         "output": {{
             "event_summary": "Consulta com o Dr. João",
             "event_start": "2025-07-01T09:00:00-04:00"
             }}
         }},
         {{
-        "input": "Marca dentista quarta-feira às 9h e bota pra lembrar na terça e 1 hora antes.",
+        "mensagem": "Marca dentista quarta-feira às 9h e bota pra lembrar na terça e 1 hora antes.",
         "output": {{
             "event_summary": "Dentista",
             "event_start": "2025-07-02T09:00:00-04:00",
@@ -72,9 +74,18 @@ def interpretar_agendamento(mensagem: str) -> Union[Dict[str, Any], None]:
             "visibility": "private",
             "reminders": [60, 1440]
             }}
+        }},
+        {{
+            "missing_data": event_start,
+            "mensagem": "18h no Golden Gol",
+            "output": {{
+                "event_start": "2025-07-01T18:00:00-04:00",
+                "location": "Golden Gol"
+            }}
         }}
 
-
+    ## missing_data:
+    {missing_data}
     ## Mensagem:
     "{mensagem}"
     """

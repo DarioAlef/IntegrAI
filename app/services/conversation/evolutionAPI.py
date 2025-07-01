@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import requests
+import httpx
 import os
 
 load_dotenv()
@@ -57,13 +57,14 @@ class EvolutionAPI():
         
 
         # Envia a requisição POST para o Evolution API
-        response = await requests.post(url, json=payload, headers=self.headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=payload, headers=self.headers)
 
         return response
-    
-    
-    def send_audio(self, arq_b64, sender_number):
-        
+
+
+    async def send_audio(self, arq_b64, sender_number):
+
         url = f"http://{self.server_url}/message/sendWhatsAppAudio/{self.instance}"
 
         payload = {
@@ -76,12 +77,12 @@ class EvolutionAPI():
             "audioMessage": {"audio": arq_b64}
         }
 
-        response = requests.request("POST", url, json=payload, headers=self.headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=payload, headers=self.headers)
 
         print(response.text)
-    
-    
-    def send_media(self, arq_b64):
+
+    async def send_media(self, arq_b64):
         url = f"http://{self.server_url}/message/sendMedia/{self.instance}"
 
         payload = {
@@ -98,6 +99,7 @@ class EvolutionAPI():
             }
         }
 
-        response = requests.request("POST", url, json=payload, headers=self.headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=payload, headers=self.headers)
 
         print(response.text)

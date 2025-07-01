@@ -9,18 +9,21 @@ django.setup()
 from core.models import User
 
 
-def command_handler(auth_user: User, message, sender_number):
+async def command_handler(auth_user: User, message, sender_number):
     # Verificar processos em andamento
     if auth_user.waiting_event_data != None:
-        appointment_handler(auth_user, message, sender_number)
+        await appointment_handler(auth_user, message, sender_number)
         return True
 
     # Interpretar se é comando ou não
     command = interpretar_comando(message)
-    if command.get("is_command", False):
+    if not command.get("is_command"):
+        # Se for um comando, executa a ação correspondente
+        print("Mensagem não é um comando", command)
         return False
 
     if command.get("command"):
+        print(f"Comando recebido: {command.get('command')}")
         comandos_disponiveis = ["agendamento",
                                 # "editar ou deletar dados da conta",
                                 # "cancelar processo atual", 
@@ -33,10 +36,10 @@ def command_handler(auth_user: User, message, sender_number):
         # Se for um comando, executa a ação correspondente
         if command.get("command") not in comandos_disponiveis:
             messenger = EvolutionAPI()
-            messenger.enviar_mensagem(
+            await messenger.enviar_mensagem(
                 'Ops! Infelizmente ainda não temos suporte ao comando desejado. Por hora trabalhamos somente com agendamento. Posso ajudá-lo com isso?', sender_number)
             return True
         
         if command.get("command") == "agendamento":
-            appointment_handler(auth_user, message, sender_number)
+            await appointment_handler(auth_user, message, sender_number)
             return True

@@ -35,8 +35,8 @@ async def chatbot_response(user: User, sender_number):
     resposta = resposta.strip()
 
     for part in split_message(resposta):
-        messenger.enviar_mensagem(part, sender_number)
+        await messenger.enviar_mensagem(part, sender_number)
 
-    store_message(user, 'assistant', resposta, False)
+    await store_message(user, 'assistant', resposta, False)
 
     return resposta

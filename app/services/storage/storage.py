@@ -5,16 +5,18 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
 django.setup()
 from django.db.models import Count, Window
 from django.db.models.functions import RowNumber
-from fastapi.concurrency import run_in_threadpool
+from starlette.concurrency import run_in_threadpool
 from core.models import DialogueContext, Event, Message, User
 django.setup()
 
 
 async def store_message(user: User, sender: str, content: str, is_voice: bool):
-    msg_user = await run_in_threadpool(
+    print("user received:", user)
+    print("type: ", type(user))
+    await run_in_threadpool(
         Message.objects.create,
         user=user,
-        sender='user',
+        sender=sender,
         content=content,
         is_voice=is_voice
     )
@@ -37,27 +39,34 @@ async def retrieve_context(user: User):
     return context.context if context else None
 
 async def update_user(user: User, name: str, email: str):
-    user.name = name
-    user.email = email
-    user.waiting_user_data = None
-    user.save()
-    print ({'status': 'Success: user info edited. End of process.'})
+    def _update():
+        user.name = name
+        user.email = email
+        user.waiting_user_data = None
+        user.save()
+
+    await run_in_threadpool(_update)
+    print({'status': 'Success: user info edited. End of process.'})
+
 
 async def delete_user(user: User):
-    user.delete()
-    print ({'status': 'Success: User deleted. End of process'})
+    await run_in_threadpool(user.delete)
+    print({'status': 'Success: User deleted. End of process'})
 
 
 async def create_user(phone_number):
-    user = User(phone_number=phone_number, waiting_user_data="waiting_for_name_and_email")
-    user.save()
+    def _create():
+        user = User(phone_number=phone_number, waiting_user_data="waiting_for_name_and_email")
+        user.save()
+
+    await run_in_threadpool(_create)
     print({'status': 'Pending: user created but not yet registered! End of process.'})
 
 
 async def retrieve_history(user: User, quantity: int):
     def _get_data():
         base_qs = Message.objects.filter(user=user)
-        
+
         qs_with_count = base_qs.annotate(
             row_number=Window(expression=RowNumber()),
             total=Window(expression=Count('id'))
@@ -67,7 +76,7 @@ async def retrieve_history(user: User, quantity: int):
         total = history[0].total if history else 0
         return history, total
 
-    return await run_in_threadpool(_get_data) 
+    return await run_in_threadpool(_get_data)
 
 async def store_event(user: User, event_data: dict):
     event = await run_in_threadpool(

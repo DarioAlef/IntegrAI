@@ -3,7 +3,7 @@ import django
 # Inicializa o Django para permitir uso dos modelos fora do padrão Django.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
 django.setup()
-from fastapi.concurrency import run_in_threadpool
+from starlette.concurrency import run_in_threadpool
 from app.services.context.context_storage import update_context
 from app.services.storage.storage import retrieve_context
 from core.models import User
