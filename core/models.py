@@ -51,12 +51,15 @@ class User(ModelBase):
         blank=True
     )  
     
+    ### Variáveis de estado de AUTENTICAÇÀO
+
     waiting_user_data = models.CharField(
         max_length=100, 
         null=True,
         blank=True
     )  # Para armazenar o estado
 
+    #### Variáveis de estado de EVENTOS
     waiting_event_data = models.CharField(
         max_length=100,
         null=True,
@@ -66,6 +69,12 @@ class User(ModelBase):
     current_event_data = models.JSONField(
         default=dict,
         help_text="Armazena os dados do evento atual que está sendo agendado ou editado"
+    )
+
+    appointment_message_counter = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Baseado nesse contador será enviado o contexto da conversa sobre o agendamento para a LLM"
     )
 
     def __str__(self):
