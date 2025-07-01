@@ -1,8 +1,7 @@
 from app.services.storage.storage import store_message
 from app.utils.text import extrair_texto
 
-def processar_texto(data, user) -> str:
-    msg_data = data["data"]["message"]
+def processar_texto(msg_data, user) -> str:
     text_data = extrair_texto(msg_data)
     if not text_data:
         return None

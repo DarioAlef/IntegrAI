@@ -8,15 +8,21 @@ django.setup()
 from app.services.storage.storage import create_user, delete_user, update_user
 from core.models import User
 from app.services.conversation.evolutionAPI import EvolutionAPI
+from fastapi.concurrency import run_in_threadpool
 from app.utils.validation import is_valid_name_and_email
 
 
 
 
-def authenticate(phone_number, message) -> User | None:  
+async def authenticate(phone_number, message) -> User | None:  
     messenger = EvolutionAPI()
     try:
-        user = User.objects.get(phone_number=phone_number)
+        # Use run_in_threadpool para operações síncronas do Django
+        user = await run_in_threadpool(
+            User.objects.get, 
+            phone_number=phone_number
+        )
+        
         if user.waiting_user_data == "waiting_for_name_and_email":
             if valid_data := is_valid_name_and_email(message):
                 update_user(user, valid_data['name'], valid_data['email'])

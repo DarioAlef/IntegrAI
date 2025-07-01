@@ -42,7 +42,7 @@ async def webhook(request: Request):
         # Checa se foi o bot que enviou a mensagem.
         from_me = data["data"].get("key", {}).get("fromMe", False)
         # Extrai o texto da mensagem (se houver).
-        message = processar_texto(msg_data)
+        message = processar_texto(msg_data, user)
         # Pega o número do remetente (quem enviou a mensagem) a partir do campo remoteJid.
         sender_number = data['data']['key']['remoteJid'].split("@")[0]
     else:
@@ -54,7 +54,7 @@ async def webhook(request: Request):
     # 2. Authentication - Busca ou cria o usuário no banco de dados, usando o número do remetente.
     # ==============================================================================================
     if sender_number:
-       if not (authenticated_user := authenticate(sender_number, message)):
+       if not (authenticated_user := await authenticate(sender_number, message)):
            return {"response": "User not authenticated yet"}
 
     # ==============================================================================================
@@ -72,7 +72,7 @@ async def webhook(request: Request):
     # 5. Iniciar o serviço.
     # ==============================================================================================
         if not command_handler(authenticated_user, message, sender_number):
-            chatbot_response(authenticated_user, sender_number)
+            await chatbot_response(authenticated_user, sender_number)
 
     # Se nenhuma das condições acima for satisfeita, retorna status ignorado.
     return {"status": "ignored"}  # Se não for mensagem relevante, retorna ignorado.

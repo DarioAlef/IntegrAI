@@ -20,7 +20,10 @@ services:
       dockerfile: Dockerfile
     container_name: fastapi
     restart: always
-    # volumes:
+    volumes:
+      - ../:/app
+      - /app/.venv                  # Exclui o .venv do host
+      - /app/__pycache__
     #   - ../app:/app
     #   - ../core:/core
     #   - ../integrai:/integrai
@@ -31,7 +34,11 @@ services:
     env_file:
       - ../.env
     depends_on:
-      - evolution  
+      - evolution
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload", "--reload-dir", "/app"]
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1    
 
   db:
     image: postgres:16
