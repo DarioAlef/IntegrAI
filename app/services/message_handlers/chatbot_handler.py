@@ -20,7 +20,7 @@ async def chatbot_response(user: User, sender_number):
     messages = []
     for m in short_history:
         role = 'user' if m.sender == 'user' else 'assistant' # Define o papel da mensagem.
-        messages.append({"role": role, "content": [{"type": "text", "text": m.content}]})
+        messages.append({"role": role, "content": m.content})
     
     
     # (Atualiza se oportuno) e recupera o contexto de diálogo de longo prazo.
@@ -37,6 +37,6 @@ async def chatbot_response(user: User, sender_number):
     for part in split_message(resposta):
         messenger.enviar_mensagem(part, sender_number)
 
-    store_message(user, 'assistant', resposta, False)
+    await store_message(user, 'assistant', resposta, False)
 
     return resposta

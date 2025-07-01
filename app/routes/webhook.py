@@ -42,7 +42,7 @@ async def webhook(request: Request):
         # Checa se foi o bot que enviou a mensagem.
         from_me = data["data"].get("key", {}).get("fromMe", False)
         # Extrai o texto da mensagem (se houver).
-        message = processar_texto(msg_data, user)
+        message = await processar_texto(msg_data, user)
         # Pega o número do remetente (quem enviou a mensagem) a partir do campo remoteJid.
         sender_number = data['data']['key']['remoteJid'].split("@")[0]
     else:
