@@ -23,7 +23,7 @@ async def cancel_handler(auth_user: User, sender_number):
     # Cancela o processo de agendamento atual
     auth_user.waiting_event_data = None
     auth_user.appointment_message_counter = 0
-    auth_user.current_event_data = None
+    auth_user.current_event_data = {}
     await run_in_threadpool(auth_user.save)
 
     messenger = EvolutionAPI()
