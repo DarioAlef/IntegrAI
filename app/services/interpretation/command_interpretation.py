@@ -22,7 +22,7 @@ api_key = os.getenv("GROQ_API_KEY")
 
 def interpretar_comando(mensagem: str) -> Dict[str, Union[bool, str]]:
     # Lista de comandos implementados e funcionando:
-    comandos_disponiveis = ["agendamento", "envio_de_mensagem"]
+    comandos_disponiveis = ["agendamento", "conversa"]
     # Esta função interpreta uma mensagem e identifica se é um comando de agendamento ou envio de mensagem.
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
     prompt = f"""
@@ -43,8 +43,8 @@ Abaixo estão exemplos de frases e se são comandos:
 
 [
     {{
-    "input": "Manda uma msg pro Ricardo com o número do pedido",
-    "output": {{"is_command": true, "command": "envio_de_mensagem"}}
+    "input": "Manda pra mim um resumo da 2a guerra mundial",
+    "output": {{"is_command": true, "command": "conversa"}}
   }},
   {{
     "input": "Marca comigo o check-up anual pra quinta de manhã",
@@ -52,7 +52,7 @@ Abaixo estão exemplos de frases e se são comandos:
   }},
   {{
     "input": "Avisa o João que o relatório já foi enviado",
-    "output": {{"is_command": true, "command": "envio_de_mensagem"}}
+    "output": {{"is_command": true, "command": "comando_indisponível"}}
   }},
   {{
     "input": "Preciso avisar o João que o relatório já foi enviado",
@@ -60,11 +60,11 @@ Abaixo estão exemplos de frases e se são comandos:
   }},
   {{
     "input": "Chama a galera no grupo e lembra da reunião",
-    "output": {{"is_command": true, "command": "envio_de_mensagem"}}
+    "output": {{"is_command": true, "command": "comando_indisponível"}}
   }},
   {{
-    "input": "Me lembra de ligar pro plano de saúde",
-    "output": {{"is_command": true, "command": "comando_indisponível"}}
+    "input": "Fala sobre a história da Itália pra mim",
+    "output": {{"is_command": true, "command": "conversa"}}
   }},
   {{
     "input": "Coloca aí: reunião com fornecedores quarta às 9",
@@ -83,15 +83,14 @@ Abaixo estão exemplos de frases e se são comandos:
     "output": {{"is_command": true, "command": "agendamento"}}
   }}
 ]
-
-Agora analise a seguinte frase:
-"{mensagem}"
 """
+    mensagem = f"Mensagem:\"{mensagem}\""
+
     resposta = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.0,
-    )
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}, {"role": "user", "content": mensagem}],
+            temperature=0.0,
+        )
     comando = resposta.choices[0].message.content.strip()
 
     try:

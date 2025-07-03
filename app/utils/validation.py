@@ -23,6 +23,9 @@ def valid_user_message(message, from_me, user_authenticated):
 
 
 from datetime import datetime, timedelta
+from typing import Union
+import re
+import json
 
 from app.utils.now import now
 
@@ -46,7 +49,8 @@ def validate_event_data(event_data: dict) -> tuple[dict, dict]:
     if event_data.get('event_start'):
         try:
             start = datetime.fromisoformat(event_data['event_start'])
-            actual_now = datetime.fromisoformat(now)
+            # now já é um objeto datetime, não precisa converter
+            actual_now = now
             if start >= actual_now:
                 current_event_data['event_start'] = event_data['event_start']
             else:
@@ -95,3 +99,109 @@ def format_event_time(date_time_iso: str, time_zone: str = "America/Sao_Paulo") 
         "dateTime": date_time_iso,
         "timeZone": time_zone
     }
+
+
+def extrair_json_da_resposta(resposta: Union[str, dict]) -> dict:
+    # Se já for dict (como parece ser), não precisa fazer nada
+    if isinstance(resposta, dict):
+        return resposta
+
+    if not isinstance(resposta, str):
+        print("❌ Tipo inesperado em 'resposta':", type(resposta))
+        return {"error": True}
+
+    try:
+        print("Resposta recebida para extrair:", resposta)
+
+        # Remove blocos markdown se existirem
+        resposta = re.sub(r'```json|```', '', resposta).strip()
+
+        # Extrai o bloco JSON
+        match = re.search(r'\{.*\}', resposta, re.DOTALL)
+        if match:
+            json_str = match.group()
+            
+            # Abordagem simples e direta: corrigir problemas comuns
+            fixes = [
+                # 1. Tenta parse direto
+                (json_str, "Parse direto"),
+                
+                # 2. PRINCIPAL: Substitui None por null (problema do Python vs JSON)
+                (json_str.replace(': None,', ': null,').replace(': None}', ': null}'), "Python None -> JSON null"),
+                
+                # 3. Fix específico para aspas problemáticas
+                (json_str.replace('"de origem misteriosa"', 'de origem misteriosa'), "Fix específico aspas"),
+                
+                # 4. Remove todas as aspas duplas problemáticas no meio de frases
+                (re.sub(r'([a-záêçõ]+)\s+"([^"]+)"\s+([a-záêçõ]+)', r'\1 \2 \3', json_str), "Remove aspas no meio"),
+                
+                # 5. Último recurso: remove quebras de linha e tenta
+                (json_str.replace('\n', ' ').replace('  ', ' '), "Normaliza espaços"),
+            ]
+            
+            for json_corrigido, descricao in fixes:
+                try:
+                    resultado = json.loads(json_corrigido)
+                    print(f"✅ Sucesso com: {descricao}")
+                    return resultado
+                except json.JSONDecodeError as e:
+                    print(f"⚠️ {descricao} falhou: {e}")
+                    continue
+            
+            # Se nenhuma estratégia funcionou, retorna erro
+            print("❌ Todas as estratégias falharam")
+            return {"error": True}
+        else:
+            print("⚠️ Nenhum JSON encontrado na resposta.")
+    except Exception as e:
+        print("❌ Erro geral ao extrair JSON:", e)
+
+    return {"error": True}
+
+
+def extrair_campos_manual(json_str: str) -> dict:
+    """Extrai campos JSON manualmente quando o parse falha"""
+    try:
+        resultado = {}
+        
+        # Extrai resumo (melhor regex para capturar texto com aspas)
+        resumo_match = re.search(r'"resumo":\s*"([^"]*(?:\\"[^"]*)*)"', json_str)
+        if resumo_match:
+            resultado['resumo'] = resumo_match.group(1).replace('\\"', '"')
+        
+        # Extrai user_profile_data usando uma abordagem mais robusta
+        profile_match = re.search(r'"user_profile_data":\s*(\{[^}]*\})', json_str, re.DOTALL)
+        if profile_match:
+            profile_str = profile_match.group(1)
+            
+            # Tenta fazer parse apenas do objeto profile_data
+            try:
+                import ast
+                profile_data = ast.literal_eval(profile_str.replace('null', 'None'))
+                resultado['user_profile_data'] = profile_data
+            except:
+                # Se falhar, extrai manualmente
+                profile_data = {}
+                
+                # Extrai campos com regex mais específica
+                fields = re.findall(r'"([^"]+)":\s*([^,\n}]+)', profile_str)
+                for key, value in fields:
+                    value = value.strip()
+                    if value == 'null':
+                        profile_data[key] = None
+                    elif value.startswith('"') and value.endswith('"'):
+                        profile_data[key] = value[1:-1]
+                    elif value.startswith('[') and value.endswith(']'):
+                        # Extrai lista
+                        items = re.findall(r'"([^"]+)"', value)
+                        profile_data[key] = items
+                    else:
+                        profile_data[key] = value
+                
+                resultado['user_profile_data'] = profile_data
+        
+        return resultado if resultado else {"error": True}
+    except Exception as e:
+        print("❌ Erro na extração manual:", e)
+        return {"error": True}
+

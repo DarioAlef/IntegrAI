@@ -44,6 +44,7 @@ async def command_handler(auth_user: User, message, sender_number):
                                 # "checkar_eventos",
                                 # "lembretes",
                                 # "enviar_email",
+                                "conversa"
                                 ]
         # Se for um comando, executa a ação correspondente
         if command.get("command") not in comandos_disponiveis:
@@ -52,5 +53,13 @@ async def command_handler(auth_user: User, message, sender_number):
             return True
         
         if command.get("command") == "agendamento":
+            await messenger.enviar_mensagem(
+                'Ótimo! Vamos começar o processo de agendamento. Um momento...', sender_number
+            )
             await appointment_handler(auth_user, message, sender_number)
             return True
+        elif command.get("command") == "conversa":
+            # Se for um comando, executa a ação correspondente
+            print("Comando é: ", command)
+
+            return False

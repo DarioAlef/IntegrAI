@@ -130,11 +130,6 @@ class DialogueContext(ModelBase):
         on_delete=models.CASCADE
     )
     
-    session_id = models.CharField(
-        max_length=100, 
-        unique=True
-    )
-    
     context = models.JSONField(
         default=dict
     )  # Contextual data for dialogue

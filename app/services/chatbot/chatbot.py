@@ -2,7 +2,9 @@ import os  # Importa o módulo 'os', que permite interagir com variáveis de amb
 import json  # Importa o módulo 'json', usado para trabalhar com dados no formato JSON (não está sendo usado neste trecho, mas é comum em APIs).
 import requests  # Importa o módulo 'requests', utilizado para fazer requisições HTTP (não está sendo usado neste trecho, mas é comum em integrações de API).
 from dotenv import load_dotenv  # Importa a função 'load_dotenv' para carregar variáveis de ambiente de um arquivo .env.
-from groq import Groq  # Importa a classe 'Groq', que é o cliente oficial para acessar a API da Groq.
+from groq import Groq
+
+from app.utils.now import now  # Importa a função 'now' para obter a data/hora atual.
 
 # Carrega as variáveis de ambiente do arquivo .env para o ambiente do Python.
 load_dotenv() 
@@ -33,6 +35,8 @@ def get_llm_response(messages, context=None):
             "Responda sempre em português. Seu nome é IntegrAI. Você é um assistente que responde mensagens do usuário no WhatsApp."
             "Abaixo uma contextualização resumida da sua interação anterior com o usuário: \n"
             f"{context}\n"
+            "Abaixo a hora/data atual:\n"
+            f"{now}\n"
             "Continue a conversa com base nesse histórico e no que vier a seguir."
         )
     })

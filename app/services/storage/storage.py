@@ -24,8 +24,7 @@ async def store_context(user: User, context):
     # Salva ou atualiza o contexto de diálogo de longo prazo no banco.
     await run_in_threadpool(
         DialogueContext.objects.update_or_create,
-        user=user,
-        session_id=str(user.id),  # Usa o ID do usuário como session_id.
+        user=user,  # Usa o ID do usuário como session_id.
         context=context
     )
 
@@ -63,18 +62,24 @@ async def create_user(phone_number):
 
 async def retrieve_history(user: User, quantity: int):
     def _get_data():
+        from django.db.models import Q
+
+        # Todas as mensagens para histórico (user + assistant)
         base_qs = Message.objects.filter(user=user)
 
-        qs_with_count = base_qs.annotate(
-            row_number=Window(expression=RowNumber()),
-            total=Window(expression=Count('id'))
+        # Apenas mensagens do usuário, para contagem
+        user_message_count = base_qs.filter(sender='user').count()
+
+        # Recupera as últimas `quantity` mensagens (de ambos)
+        qs_with_row = base_qs.annotate(
+            row_number=Window(expression=RowNumber())
         ).order_by('-timestamp')[:quantity][::-1]
 
-        history = list(qs_with_count)
-        total = history[0].total if history else 0
-        return history, total
+        history = list(qs_with_row)
+        return history, user_message_count
 
     return await run_in_threadpool(_get_data)
+
 
 async def store_event(user: User, event_data: dict):
     try: 

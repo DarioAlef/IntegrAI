@@ -17,7 +17,7 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
 
     ## Objetivo
 
-    Com base nas mensagens trocadas entre o usuário e o assistente, seu objetivo é gerar um JSON **válido** que represente os dados completos do evento.  
+    Com base nas mensagens enviadas pelo usuário, seu objetivo é gerar um JSON **válido** que represente os dados completos do evento.  
     O usuário pode estar fornecendo os dados aos poucos, corrigindo ou completando o evento.
 
     ## Instruções:
@@ -60,7 +60,6 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
         {{
         "conversation": [
             {{"role": "user", "content": "Agende uma consulta com o Dr. João"}},
-            {{"role": "assistant", "content": "Identifiquei que você quer agendar um evento:\n\n{{"event_summary": "Consulta com o Dr. João"}}\n\nMas tive dúvidas nos campos:\n\n{{"event_start": 'Este campo é obrigatório.'}}.\n\nMe envie os dados corrigidos pra continuar. Tô te escutando!"}}
             {{"role": "user", "content": "na terça-feira às 18h"}},
         ],
         "output": {{
@@ -71,7 +70,6 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
         {{
         "conversation": [
             {{"role": "user", "content": "Marca dentista e bota pra lembrar na terça e 1 hora antes."}},
-            {{"role": "assistant", "content": "Entendi que você quer agendar um evento:\n\n{{\"event_summary\": \"Dentista\"}}\n\nMas tive dúvidas nos campos:\n\n{{\"event_start\": \"'Este campo é obrigatório.'\"}}\n\nMe envie os dados corrigidos pra continuar. Tô te escutando!"}},
             {{"role": "user", "content": "Tinha me esquecido, é quarta-feira às 9h"}}
         ],
         "output": {{
@@ -80,6 +78,8 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
             "reminders": [60, 1440]
         }}
         }}
+
+    ⚠️ IMPORTANTE: Sua resposta deve ser somente um JSON válido, sem comentários, sem texto explicativo, sem markdown, e sem quebras fora do JSON. Não adicione nenhuma outra informação fora do JSON.
     """
 
     # ✅ Início dos logs e validações
