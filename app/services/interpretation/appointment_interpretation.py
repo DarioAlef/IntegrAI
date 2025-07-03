@@ -22,7 +22,7 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
 
     ## Instruções:
 
-    Responda somente com JSON válido **no seguinte formato** com os dados extraídos da conversa:
+    Sempre responda somente com JSON válido **no seguinte formato** com os dados extraídos da conversa:
 
     {{
     "event_summary": str,              # Título ou motivo do evento. Se **não identificar um título claro**, use `"lembrete sem título" (ex: "Reunião com fornecedores"),
@@ -103,9 +103,9 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
         temperature=0.0,
     )
 
-    print("\n📥 Resposta bruta da LLM:\n", conteudo)
 
     conteudo = resposta.choices[0].message.content.strip()
+    print("\n📥 Resposta bruta da LLM:\n", conteudo)
     # print("🧾 Conteúdo bruto da LLM:\n", conteudo)
 
     try:

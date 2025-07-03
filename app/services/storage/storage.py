@@ -11,8 +11,6 @@ django.setup()
 
 
 async def store_message(user: User, sender: str, content: str, is_voice: bool):
-    print("user received:", user)
-    print("type: ", type(user))
     await run_in_threadpool(
         Message.objects.create,
         user=user,
@@ -79,8 +77,14 @@ async def retrieve_history(user: User, quantity: int):
     return await run_in_threadpool(_get_data)
 
 async def store_event(user: User, event_data: dict):
-    event = await run_in_threadpool(
-        lambda: Event.objects.create(user=user, **event_data)
-    )
-    event.save()
-    print({'status': 'Success: event stored.'})
+    try: 
+        def create_event():
+            event = Event(user=user, **event_data)
+            event.save()
+            return event
+        
+        event = await run_in_threadpool(create_event)
+        print(f"Success: event stored.\n ID: {event.id},\n Summary: {event.event_summary}")
+    except Exception as e:
+        print(f"Error storing event: {e}")
+        return None

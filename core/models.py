@@ -72,7 +72,7 @@ class User(ModelBase):
     )
 
     appointment_message_counter = models.IntegerField(
-        null=True,
+        default=0,
         blank=True,
         help_text="Baseado nesse contador será enviado o contexto da conversa sobre o agendamento para a LLM"
     )

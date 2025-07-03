@@ -25,7 +25,7 @@ e = EvolutionAPI()  # Instancia a classe de integração com Evolution API.
 async def webhook(request: Request):
     # Lê o corpo da requisição e converte de JSON para dicionário Python.
     data = await request.json()
-    print("Webhook em formato JSON recebido:", data)
+    #print("Webhook em formato JSON recebido:", data)
 
     # Inicializa variáveis que serão usadas no processamento da mensagem.
     message = None   # Texto da mensagem recebida (se houver).
@@ -39,7 +39,7 @@ async def webhook(request: Request):
     # ==============================================================================================
     if "data" in data and "message" in data["data"] and "key" in data["data"]:
         msg_data = data["data"]["message"]
-        print("msg_data:", msg_data)
+        #print("msg_data:", msg_data)
         # Checa se foi o bot que enviou a mensagem.
         from_me = data["data"].get("key", {}).get("fromMe", False)
         # Extrai o texto da mensagem (se houver).
@@ -65,7 +65,8 @@ async def webhook(request: Request):
     # ==============================================================================================
     if not message and (texto_transcrito := await processar_audio(data, authenticated_user)):
         message = texto_transcrito
-        print("Texto transcrito do áudio:", message)
+    
+    print(f"\n\nMENSAGEM:\nNúmero do remetente: {sender_number}\nTexto da mensagem: {message}", )
 
     # ==============================================================================================
     # 4. Validar a mensagem e salvar mensagem.

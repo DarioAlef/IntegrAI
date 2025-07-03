@@ -12,29 +12,20 @@ from core.models import User
 
 
 async def command_handler(auth_user: User, message, sender_number):
+    print("Iniciando o command_handler para a mensagem:", message)
     # Verificar processos em andamento
     messenger = EvolutionAPI()
-    if auth_user.waiting_event_data != None:
-        # Verificar se o usuário deseja cancelar o processo de agendamento atual
-        if confirm := interpretar_cancelamento(message):
-            if confirm.get("is_cancellation") == "yes":
-                # Se o usuário confirmar, cancela o processo de agendamento
-                if await cancel_handler(auth_user, sender_number):
-                    print("Usuário confirmou o cancelamento do processo de agendamento.")
-                    messenger.enviar_mensagem(
-                        "O processo de agendamento foi cancelado com sucesso. Se precisar de ajuda, é só me chamar!", sender_number)
-                    return True
-                
-            elif confirm.get("is_cancellation") == "no":
-                # Se o usuário não confirmar, cancela o processo de agendamento
-                print("Usuário não cancelou o processo de agendamento.")
-                await appointment_handler(auth_user, message, sender_number, cancel=True)
-            else:
-                print("Cancelamento não identificado. Continuando com o processo de agendamento.")
-        
-        #por enquanto único processo disponível
-        await appointment_handler(auth_user, message, sender_number)
-        return True
+    if auth_user.waiting_event_data is not None:
+        confirm = interpretar_cancelamento(message)
+        if confirm and confirm.get("is_cancellation") == "yes":
+            if await cancel_handler(auth_user, sender_number):
+                print("Usuário confirmou o cancelamento do processo de agendamento.")
+                return True
+        else:
+            print("Seguindo com o processo de agendamento...")
+            await appointment_handler(auth_user, message, sender_number)
+            return True
+
 
     # Interpretar se é comando ou não
     command = interpretar_comando(message)

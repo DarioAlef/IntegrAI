@@ -24,6 +24,8 @@ services:
       - ../:/app
       - /app/.venv                  # Exclui o .venv do host
       - /app/__pycache__
+      - ../app/services/appointment/google_calendar/credentials.json:/app/app/services/appointment/google_calendar/credentials.json
+      - ../app/services/appointment/google_calendar/token.json:/app/app/services/appointment/google_calendar/token.json
     #   - ../app:/app
     #   - ../core:/core
     #   - ../integrai:/integrai

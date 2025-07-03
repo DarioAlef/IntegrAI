@@ -26,10 +26,16 @@ from datetime import datetime, timedelta
 
 from app.utils.now import now
 
-def validate_event_data(event_data: dict):
+def validate_event_data(event_data: dict) -> tuple[dict, dict]:
+
+    #0. Validar se o parâmetro 'event_data' é um dicionário
+    if not isinstance(event_data, dict):
+        raise ValueError("O parâmetro 'event_data' deve ser um dicionário.")
 
     current_event_data = {}
     invalid_params = {}
+
+
 
     # 1. Validar se 'event_summary' e 'event_start' existem
     if event_data.get('event_summary'):
@@ -40,7 +46,8 @@ def validate_event_data(event_data: dict):
     if event_data.get('event_start'):
         try:
             start = datetime.fromisoformat(event_data['event_start'])
-            if start >= now:
+            actual_now = datetime.fromisoformat(now)
+            if start >= actual_now:
                 current_event_data['event_start'] = event_data['event_start']
             else:
                 invalid_params['event_start'] = 'A data de início não pode estar no passado.'
@@ -65,7 +72,7 @@ def validate_event_data(event_data: dict):
             end = start + timedelta(hours=1)
             current_event_data['event_end'] = end.isoformat()
         else:
-            invalid_params['event_start'] = 'Este campo é obrigatório.'
+            invalid_params['event_end'] = 'Sem data de início, não é possível determinar a data de término.'
 
     # 3. Campos opcionais
     for key in ['description', 'location', 'attendees', 'reminders']:
@@ -80,3 +87,11 @@ def validate_event_data(event_data: dict):
         invalid_params['visibility'] = "Valor inválido. Use 'private' ou 'public'."
 
     return current_event_data, invalid_params
+
+
+def format_event_time(date_time_iso: str, time_zone: str = "America/Sao_Paulo") -> dict:
+    """Formata a data/hora no formato esperado pela API Google Calendar"""
+    return {
+        "dateTime": date_time_iso,
+        "timeZone": time_zone
+    }
