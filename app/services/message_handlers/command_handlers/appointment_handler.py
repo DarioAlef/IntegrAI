@@ -10,7 +10,7 @@ from app.services.appointment.google_calendar.events_mgmt import create_event_as
 from app.services.interpretation.appointment_interpretation import interpretar_agendamento
 from app.services.interpretation.utils_interpretation import interpretar_confirmacao
 from app.services.message_handlers.command_handlers.cancel_handler import cancel_handler
-from app.utils.event_date_format import formatar_data_evento
+from app.utils.formatting import format_event_confirmation_message, format_event_validation_message, formatar_data_evento
 from app.utils.validation import extrair_json_da_resposta, validate_event_data
 from app.utils.google_maps import get_formatted_address
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
@@ -65,9 +65,9 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
     # Pega todas as mensagens desde que o processo de agendamento foi iniciado
     appointment_conversation, _ = await retrieve_history(auth_user, auth_user.appointment_message_counter)
     messages = [
-        {"role": "user", "content": m.content}
+        {"role": m.sender, "content": m.content}
         for m in appointment_conversation
-        if m.sender == 'user'
+        if m.sender in ['user', 'assistant']
     ]
     # Manda pra LLM a conversa
     print("enviando conversa sobre apontamento para a LLM: ", messages)
@@ -100,15 +100,6 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
     if invalid_params:
         # Dados do evento validados.
         auth_user.current_event_data = current_event_data
-        mensagem = f"Entendi que você quer agendar um evento:\n\n{current_event_data}\n\nMas tive dúvidas nos campos:\n\n{invalid_params}.\n\n**Me envie os dados corrigidos pra continuar. Tô te escutando!**"
-        if await messenger.enviar_mensagem(mensagem, sender_number):
-            await store_message(auth_user, 'assistant', extrair_json_da_resposta(mensagem), False)
-            # Se nada bugar, quando o usuário vier de novo vão ser mais 2 mensagens da conversa
-            auth_user.appointment_message_counter += 2
-        else:
-            # Se bugar, contar só a mensagem do usuário
-            auth_user.appointment_message_counter += 1
-
         try:
             await run_in_threadpool(auth_user.save)
             print("Dados do evento salvos no banco de dados:",
@@ -118,11 +109,20 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
             print("❌ Erro ao salvar usuário:")
             traceback.print_exc()
             await messenger.enviar_mensagem(
-                "Opa! Sinto muito. Ocorreu um erro ao tentar agendar o evento. Tente novamente mais tarde.",
+                "Opa! Sinto muito. Ocorreu um erro ao tentar agendar o evento. Processo de agendamento cancelado. Tente novamente mais tarde.",
                 sender_number
             )
             cancel_handler(auth_user, messenger, sender_number)
+
+        print("Dados do evento inválidos. Enviando mensagem de validação:", mensagem)
+        mensagem = format_event_validation_message(auth_user.current_event_data, invalid_params)
+        await messenger.enviar_mensagem(mensagem, sender_number)
+        await store_message(auth_user, 'assistant', f"{auth_user.current_event_data}", False)
+        # Se nada bugar, quando o usuário vier de novo vão ser mais 2 mensagens da conversa
+        auth_user.appointment_message_counter += 2
+        
         return
+
     else:
         try:
             current_event_data['attendees'].append({
@@ -137,14 +137,15 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
             await run_in_threadpool(auth_user.save)
             print("Dados do evento atualizados no objeto User instanciado:",
                   auth_user.current_event_data, auth_user)
-            await messenger.enviar_mensagem(f"Verifica se tá tudo certinho: \n\n{auth_user.current_event_data} \n\n**Por favor, confirme o agendamento do evento ou se não, diga que não confirma e já me mande as alterações na mesma mensagem!**", sender_number)
-            print("Contador de mensagens do usuário antes da atualização:",
-                  type(auth_user.appointment_message_counter))
+            # Envia mensagem de confirmação para o usuário.
+            print("Enviando mensagem de confirmação para o usuário:", sender_number)
+            mensagem = format_event_confirmation_message(auth_user.current_event_data)
+            await messenger.enviar_mensagem(mensagem, sender_number)
+            await store_message(auth_user, 'assistant', f"{auth_user.current_event_data}", False)
             auth_user.appointment_message_counter += 2
             await run_in_threadpool(auth_user.save)
-            print("Contador de mensagens do usuário atualizado:",
-                  auth_user.appointment_message_counter)
-            print("Dados do evento validados e aguardando confirmação do usuário.")
+            
+            
         except Exception as e:
             print("❌ Erro ao salvar usuário:", repr(e))
             traceback.print_exc()

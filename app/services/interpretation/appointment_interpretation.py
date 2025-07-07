@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict, List, Union
 from dotenv import load_dotenv
 from groq import Groq  # Importa o cliente Groq
-from app.utils.now import now  # Importa a função de data e hora atual
+from app.utils.now import datetime_now  # Importa a função de data e hora atual
 
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
@@ -36,7 +36,7 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
     }}
 
     ## Considere a Data e Hora atuais:
-    "{now}"
+    "{datetime_now()}"
 
     ## Regras:
     - O evento sempre deve ser para o futuro.

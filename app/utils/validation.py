@@ -27,7 +27,7 @@ from typing import Union
 import re
 import json
 
-from app.utils.now import now
+from app.utils.now import formated_now
 
 def validate_event_data(event_data: dict) -> tuple[dict, dict]:
 
@@ -50,7 +50,7 @@ def validate_event_data(event_data: dict) -> tuple[dict, dict]:
         try:
             start = datetime.fromisoformat(event_data['event_start'])
             # now já é um objeto datetime, não precisa converter
-            actual_now = now
+            actual_now = formated_now()
             if start >= actual_now:
                 current_event_data['event_start'] = event_data['event_start']
             else:
@@ -79,9 +79,32 @@ def validate_event_data(event_data: dict) -> tuple[dict, dict]:
             invalid_params['event_end'] = 'Sem data de início, não é possível determinar a data de término.'
 
     # 3. Campos opcionais
-    for key in ['description', 'location', 'attendees', 'reminders']:
+    for key in ['description', 'location', 'reminders']:
         if key in event_data:
             current_event_data[key] = event_data[key]
+
+    # 3.1 Validar attendees (se presente)
+    attendees = event_data.get('attendees')
+    if attendees:
+        if not isinstance(attendees, list):
+            invalid_params['attendees'] = 'O campo attendees deve ser uma lista.'
+        else:
+            valid_attendees = []
+            for idx, attendee in enumerate(attendees):
+                if not isinstance(attendee, dict):
+                    invalid_params[f'attendees[{idx}]'] = 'Cada participante deve ser um dicionário.'
+                    continue
+                email = attendee.get('email')
+                if not email:
+                    invalid_params[f'attendees[{idx}].email'] = 'O campo email é obrigatório para cada participante.'
+                elif '@' not in email or '.' not in email:
+                    invalid_params[f'attendees[{idx}].email'] = 'Email inválido.'
+                else:
+                    valid_attendees.append(attendee)
+
+            if valid_attendees:
+                current_event_data['attendees'] = valid_attendees
+
 
     # 4. Validar visibility
     visibility = event_data.get('visibility', 'private')

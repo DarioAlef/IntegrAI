@@ -4,7 +4,7 @@ import requests  # Importa o módulo 'requests', utilizado para fazer requisiç�
 from dotenv import load_dotenv  # Importa a função 'load_dotenv' para carregar variáveis de ambiente de um arquivo .env.
 from groq import Groq
 
-from app.utils.now import now  # Importa a função 'now' para obter a data/hora atual.
+from app.utils.now import datetime_now  # Importa a função 'now' para obter a data/hora atual.
 
 # Carrega as variáveis de ambiente do arquivo .env para o ambiente do Python.
 load_dotenv() 
@@ -36,7 +36,7 @@ def get_llm_response(messages, context=None):
             "Abaixo uma contextualização resumida da sua interação anterior com o usuário: \n"
             f"{context}\n"
             "Abaixo a hora/data atual:\n"
-            f"{now}\n"
+            f"{datetime_now()}\n"
             "Continue a conversa com base nesse histórico e no que vier a seguir."
         )
     })
