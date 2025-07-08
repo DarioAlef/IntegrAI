@@ -43,7 +43,15 @@ def format_event_confirmation_message(current_event_data: dict) -> str:
 
         formatted = []
         for reminder in reminders:
-            minutes = reminder.get('minutes')
+            # Se for dict com chave 'minutes'
+            if isinstance(reminder, dict):
+                minutes = reminder.get('minutes')
+            # Se for int direto
+            elif isinstance(reminder, int):
+                minutes = reminder
+            else:
+                continue  # ignora qualquer outro tipo
+
             if not isinstance(minutes, int):
                 continue
             if minutes < 60:
@@ -105,7 +113,15 @@ def format_event_validation_message(current_event_data: dict, invalid_params: di
 
         formatted = []
         for reminder in reminders:
-            minutes = reminder.get('minutes')
+            # Se for dict com chave 'minutes'
+            if isinstance(reminder, dict):
+                minutes = reminder.get('minutes')
+            # Se for int direto
+            elif isinstance(reminder, int):
+                minutes = reminder
+            else:
+                continue  # ignora qualquer outro tipo
+
             if not isinstance(minutes, int):
                 continue
             if minutes < 60:
@@ -122,6 +138,7 @@ def format_event_validation_message(current_event_data: dict, invalid_params: di
                     suffix += f"{hours}h"
                 formatted.append(suffix)
         return ', '.join(formatted) if formatted else 'Nenhum lembrete válido'
+
 
     def format_attendees(attendees: list) -> str:
         if not attendees:
