@@ -27,7 +27,7 @@ from typing import Union
 import re
 import json
 
-from app.utils.now import formated_now
+from app.utils.now import datetime_now
 
 def validate_event_data(event_data: dict) -> tuple[dict, dict]:
 
@@ -50,7 +50,7 @@ def validate_event_data(event_data: dict) -> tuple[dict, dict]:
         try:
             start = datetime.fromisoformat(event_data['event_start'])
             # now já é um objeto datetime, não precisa converter
-            actual_now = formated_now()
+            actual_now = datetime_now()
             if start >= actual_now:
                 current_event_data['event_start'] = event_data['event_start']
             else:
