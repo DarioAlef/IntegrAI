@@ -51,11 +51,31 @@ class User(ModelBase):
         blank=True
     )  
     
-    waiting_data = models.CharField(
+    ### Variáveis de estado de AUTENTICAÇÀO
+
+    waiting_user_data = models.CharField(
         max_length=100, 
         null=True,
         blank=True
     )  # Para armazenar o estado
+
+    #### Variáveis de estado de EVENTOS
+    waiting_event_data = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
+
+    current_event_data = models.JSONField(
+        default=dict,
+        help_text="Armazena os dados do evento atual que está sendo agendado ou editado"
+    )
+
+    appointment_message_counter = models.IntegerField(
+        default=0,
+        blank=True,
+        help_text="Baseado nesse contador será enviado o contexto da conversa sobre o agendamento para a LLM"
+    )
 
     def __str__(self):
         return f"{self.name} ({self.phone_number})"
@@ -110,11 +130,6 @@ class DialogueContext(ModelBase):
         on_delete=models.CASCADE
     )
     
-    session_id = models.CharField(
-        max_length=100, 
-        unique=True
-    )
-    
     context = models.JSONField(
         default=dict
     )  # Contextual data for dialogue
@@ -153,200 +168,51 @@ class Audio(ModelBase):
         ordering = ['-created_at']
         
             
-
-# # Classe que representa integrações de um usuário com serviços externos (ex: Gmail, Google Calendar)
-# class Integration(ModelBase):
-#     user = models.ForeignKey(
-#         User, 
-#         on_delete=models.CASCADE
-#     )
+class Event(ModelBase):
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE
+    )
     
-#     type = models.CharField(
-#         max_length=50
-#     )  # e.g., 'gmail', 'google_calendar'
+    event_summary = models.CharField(
+        max_length=255, 
+        null=False
+    )
     
-#     data = models.JSONField()  # Stores credentials and settings (encrypt in logic)
+    event_start = models.DateTimeField(
+        null=False
+    )
     
-#     status = models.BooleanField(
-#         default=True
-#     )
-
-#     def __str__(self):
-#         return f"{self.user.username} - {self.type}"
-
-
-
-
-# # Classe que representa uma instância de conexão do WhatsApp para um usuário
-# class WhatsAppInstance(ModelBase):
-#     user = models.OneToOneField(
-#         User, 
-#         on_delete=models.CASCADE
-#     )
+    event_end = models.DateTimeField(
+        null=True
+    )
     
-#     instance_key = models.CharField(
-#         max_length=100
-#     )
+    description = models.TextField(
+        null=True, 
+        blank=True
+    )
     
-#     status = models.CharField(
-#         max_length=20,
-#         choices=STATUS_CHOICES,
-#         default='disconnected'
-#     )
+    location = models.CharField(
+        max_length=255, 
+        null=True, 
+        blank=True
+    )
     
-#     qr_code = models.TextField(
-#         null=True, 
-#         blank=True
-#     )
-#     connected_at = models.DateTimeField(
-#         null=True, 
-#         blank=True
-#     )
-
-#     def __str__(self):
-#         return f"{self.user.username} - {self.instance_key}"
-
-
-
-# COMMAND_STATUS_CHOICES = [
-#     ('pending', 'Pending'),
-#     ('completed', 'Completed'),
-#     ('awaiting_parameters', 'Awaiting Parameters'),
-# ]
-# ACTION_STATUS_CHOICES = [
-#     ('pending', 'Pending'),
-#     ('success', 'Success'),
-#     ('failed', 'Failed'),
-# ]
-
-# # Classe que representa um comando extraído de uma mensagem, com intenção e parâmetros
-# class Command(ModelBase):
-#     user = models.ForeignKey(
-#         User, 
-#         on_delete=models.CASCADE
-#     )
+    attendees = models.JSONField(
+        default=list,
+        help_text="Lista de emails dos participantes"
+    )
     
-#     message = models.ForeignKey(
-#         'Message', 
-#         on_delete=models.CASCADE
-#     )
-    
-#     intent = models.CharField(
-#         max_length=100
-#     )  # e.g., 'send_email', 'schedule_meeting'
-    
-#     parameters = models.JSONField(
-#         default=dict
-#     )  # e.g., {'to': 'email@exemplo.com', 'subject': 'Reunião'}
-    
-#     status = models.CharField(
-#         max_length=20,
-#         choices=COMMAND_STATUS_CHOICES,
-#         default='pending'
-#     )
+    visibility = models.CharField(
+        max_length=10,
+        choices=[('private', 'Private'), ('public', 'Public')],
+        default='private'
+    )
 
-#     def __str__(self):
-#         return f"{self.user.username} - {self.intent} - {self.created_at}"
+    reminders = models.JSONField(
+            default=list,
+            help_text="Lista de lembretes para o evento em minutos"
+    )
 
-#     class Meta:
-#         ordering = ['created_at']
-
-
-
-# # Classe que representa uma ação executada a partir de um comando (ex: enviar email, criar evento)
-# class Action(ModelBase):
-#     user = models.ForeignKey(
-#         User, 
-#         on_delete=models.CASCADE
-#     )
-    
-#     command = models.ForeignKey(
-#         'Command', 
-#         on_delete=models.SET_NULL, 
-#         null=True, 
-#         blank=True
-#     )
-    
-#     type = models.CharField(
-#         max_length=100
-#     )  # e.g., 'send_email', 'create_event'
-    
-#     data = models.JSONField(
-#         default=dict
-#     )  # Details of the action
-    
-#     status = models.CharField(
-#         max_length=20,
-#         choices=ACTION_STATUS_CHOICES,
-#         default='pending'
-#     )
-    
-#     executed_at = models.DateTimeField(
-#         null=True, 
-#         blank=True
-#     )
-
-#     def __str__(self):
-#         return f"{self.user.username} - {self.type} - {self.status}"
-
-#     class Meta:
-#         ordering = ['executed_at']
-
-
-
-# # Classe que armazena e gerencia iamgens e figurinhas enviados pelo usuário
-# class Image(ModelBase):
-#     user = models.ForeignKey(
-#         User,
-#         on_delete=models.CASCADE
-#     )
-#     message = models.ForeignKey(
-#         'Message',
-#         on_delete=models.CASCADE,
-#         related_name='images'
-#     )
-#     file = models.ImageField(
-#         upload_to='images/'
-#     )
-#     is_sticker = models.BooleanField(
-#         default=False,
-#         help_text="Se é figurinha do WhatsApp"
-#     )
-
-#     def __str__(self):
-#         return f"{self.user.username} - Imagem de {self.message.timestamp} (Sticker: {self.is_sticker})"
-
-#     class Meta:
-#         ordering = ['-created_at']
-
-
-
-# # Classe que armazena e gerencia vídeos GIFs enviados pelo usuário
-# class Video(ModelBase):
-#     user = models.ForeignKey(
-#         User,
-#         on_delete=models.CASCADE
-#     )
-#     message = models.ForeignKey(
-#         'Message',
-#         on_delete=models.CASCADE,
-#         related_name='videos'
-#     )
-#     file = models.FileField(
-#         upload_to='videos/'
-#     )
-#     is_gif = models.BooleanField(
-#         default=False,
-#         help_text="Se é um GIF animado"
-#     )
-#     duration = models.FloatField(
-#         null=True,
-#         blank=True,
-#         help_text="Duração em segundos"
-#     )
-
-#     def __str__(self):
-#         return f"{self.user.username} - Vídeo de {self.message.timestamp} (GIF: {self.is_gif})"
-
-#     class Meta:
-#         ordering = ['-created_at']
+    def __str__(self):
+        return f"{self.title} - {self.start_time} ({self.user.name})"

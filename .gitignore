@@ -1,6 +1,6 @@
 .env
 .env/
-
+.idea/
 .venv
 .venv/
 
@@ -9,3 +9,6 @@
 
 __pycache__/
 *.pyc
+# Estes devem estar na pasta app/services/calendar/
+*credentials.json
+*token.json

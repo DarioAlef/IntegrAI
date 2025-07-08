@@ -8,7 +8,7 @@
 
 from .models import User
 from .actions import send_message, menu
-from .utils import is_valid_name_and_email
+from ..app.utils.validation import is_valid_name_and_email
 from django.http import JsonResponse
 
 def check_user(data):

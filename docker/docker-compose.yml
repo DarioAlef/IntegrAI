@@ -1,0 +1,59 @@
+services:
+  evolution:
+    container_name: evolution
+    image: atendai/evolution-api:v1.8.2
+    restart: always
+    ports:
+      - 8080:8080
+    env_file:
+      - ../.env
+    volumes:
+      - evolution_instances:/evolution/instances
+      - evolution_store:/evolution/store
+    command: ['node', './dist/src/main.js']
+    expose:
+      - 8080
+
+  fastapi:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: fastapi
+    restart: always
+    volumes:
+      - ../:/app
+      - /app/.venv                  # Exclui o .venv do host
+      - /app/__pycache__
+      - ../app/services/appointment/google_calendar/credentials.json:/app/app/services/appointment/google_calendar/credentials.json
+      - ../app/services/appointment/google_calendar/token.json:/app/app/services/appointment/google_calendar/token.json
+    #   - ../app:/app
+    #   - ../core:/core
+    #   - ../integrai:/integrai
+    #   # - ../manage.py:/manage.py
+    #   - ../send_message:/send_message
+    ports:
+      - 5000:5000
+    env_file:
+      - ../.env
+    depends_on:
+      - evolution
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload", "--reload-dir", "/app"]
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1    
+
+  db:
+    image: postgres:16
+    container_name: integrai-db
+    restart: always
+    env_file:
+      - ../.env
+    ports:
+      - 5433:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  evolution_instances:
+  evolution_store:
+  pgdata:
