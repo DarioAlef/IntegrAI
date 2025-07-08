@@ -145,7 +145,7 @@ def format_event_validation_message(current_event_data: dict, invalid_params: di
             return "  - Nenhum participante"
         return '\n'.join(f"  - {a.get('email', 'sem email')}" for a in attendees)
 
-    def format_invalid_fields(errors: dict, current_event_data: dict) -> str:
+    def format_invalid_fields(errors: dict) -> str:
         if not errors:
             return "Nenhum campo inválido encontrado."
 
