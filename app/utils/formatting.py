@@ -145,10 +145,32 @@ def format_event_validation_message(current_event_data: dict, invalid_params: di
             return "  - Nenhum participante"
         return '\n'.join(f"  - {a.get('email', 'sem email')}" for a in attendees)
 
-    def format_invalid_fields(errors: dict) -> str:
+    def format_invalid_fields(errors: dict, current_event_data: dict) -> str:
         if not errors:
             return "Nenhum campo inválido encontrado."
-        return '\n'.join(f"❌ *{k}*: {v}" for k, v in errors.items())
+
+        linhas = []
+        for field_path, message in errors.items():
+            if field_path.startswith("attendees[") and ".email" in field_path:
+                # Tenta extrair o índice, ex: attendees[1].email
+                match = re.match(r"attendees\[(\d+)\]\.email", field_path)
+                if match:
+                    idx = int(match.group(1))
+                    try:
+                        name = current_event_data.get("attendees", [])[idx].get("name")
+                    except Exception:
+                        name = None
+                    if name:
+                        display = f"{name}"
+                    else:
+                        display = f"Participante {idx + 1}"
+                    linhas.append(f"❌ *{display}*: {message}")
+                    continue
+
+            # Fallback genérico
+            linhas.append(f"❌ *{field_path}*: {message}")
+
+        return "\n".join(linhas)
 
     # Montar mensagem com campos válidos
     summary = current_event_data.get('event_summary', 'Não informado')
