@@ -1,5 +1,6 @@
 import locale
 from datetime import datetime
+import re
 
 # Configura a localidade para português (pt_BR)
 try:
@@ -160,3 +161,15 @@ def format_event_validation_message(current_event_data: dict, invalid_params: di
 
 ✍️ Por favor, me envie os dados corrigidos para continuar. Tô te escutando!
 """
+
+
+
+def limpar_think_tags(resposta: str) -> str:
+    # Remove blocos <think>...</think> com qualquer conteúdo entre eles
+    resposta = re.sub(r"<think>.*?</think>", "", resposta, flags=re.DOTALL | re.IGNORECASE)
+
+    # Remove tags <think> ou </think> soltas
+    resposta = re.sub(r"</?think>", "", resposta, flags=re.IGNORECASE)
+
+    # Limpa espaços desnecessários
+    return resposta.strip()
