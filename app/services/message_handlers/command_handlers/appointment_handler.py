@@ -120,7 +120,8 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
         await store_message(auth_user, 'assistant', f"{auth_user.current_event_data}", False)
         # Se nada bugar, quando o usuário vier de novo vão ser mais 2 mensagens da conversa
         auth_user.appointment_message_counter += 2
-        
+        await run_in_threadpool(auth_user.save)
+        print("Contador de mensagens atualizado:", auth_user.appointment_message_counter)
         return
 
     else:
@@ -144,6 +145,7 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
             await store_message(auth_user, 'assistant', f"{auth_user.current_event_data}", False)
             auth_user.appointment_message_counter += 2
             await run_in_threadpool(auth_user.save)
+            print("Contador de mensagens atualizado:", auth_user.appointment_message_counter)
             
             
         except Exception as e:
