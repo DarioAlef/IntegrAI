@@ -114,8 +114,8 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
             )
             cancel_handler(auth_user, messenger, sender_number)
 
-        print("Dados do evento inválidos. Enviando mensagem de validação:", mensagem)
         mensagem = format_event_validation_message(auth_user.current_event_data, invalid_params)
+        print("Dados do evento inválidos. Enviando mensagem de validação:", mensagem)
         await messenger.enviar_mensagem(mensagem, sender_number)
         await store_message(auth_user, 'assistant', f"{auth_user.current_event_data}", False)
         # Se nada bugar, quando o usuário vier de novo vão ser mais 2 mensagens da conversa
