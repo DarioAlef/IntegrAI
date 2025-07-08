@@ -160,6 +160,9 @@ def extrair_json_da_resposta(resposta: Union[str, dict]) -> dict:
                 
                 # 5. Último recurso: remove quebras de linha e tenta
                 (json_str.replace('\n', ' ').replace('  ', ' '), "Normaliza espaços"),
+
+                # 6. Escapa aspas dentro de valores string (como em "aniversário")
+                (re.sub(r'(?<!\\)"([^"]*?)"(?![:,}\]])', lambda m: f'\\"{m.group(1)}\\"', json_str), "Escape aspas internas")
             ]
             
             for json_corrigido, descricao in fixes:
