@@ -11,7 +11,7 @@ from app.services.interpretation.appointment_interpretation import interpretar_a
 from app.services.interpretation.utils_interpretation import interpretar_confirmacao
 from app.services.message_handlers.command_handlers.cancel_handler import cancel_handler
 from app.utils.formatting import format_event_confirmation_message, format_event_validation_message, formatar_data_evento
-from app.utils.validation import extrair_json_da_resposta, validate_event_data
+from app.utils.validation import validate_event_data
 from app.utils.google_maps import get_formatted_address
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
 django.setup()

@@ -110,8 +110,11 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
     # print("🧾 Conteúdo bruto da LLM:\n", conteudo)
     conteudo = extrair_json_da_resposta(conteudo)
 
-    try:
-        return json.loads(conteudo)
+    try: 
+        if isinstance(conteudo, str):
+            return json.loads(conteudo)
+        else:
+            return conteudo  # já é dict, retorna direto
     except json.JSONDecodeError as e:
         print("❌ Erro ao decodificar JSON da resposta:", e)
         return {"error": True}

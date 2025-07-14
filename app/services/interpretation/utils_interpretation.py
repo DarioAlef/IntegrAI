@@ -62,8 +62,8 @@ def interpretar_confirmacao(mensagem: str) -> Dict[str, Union[bool, str]]:
                 "output": {{"is_confirmation": "yes" }}
             }},
             {{
-                "input": "Tanto faz pra mim.",
-                "output": {{"is_confirmation": "unidentified" }}
+                "input": "Tá ótimo, só altera o horário pra nove horas.",
+                "output": {{"is_confirmation": "no" }}
             }},
             {{
                 "input": "Isso não é comigo.",
