@@ -104,6 +104,8 @@ def validate_event_data(event_data: dict) -> tuple[dict, dict]:
 
             if valid_attendees:
                 current_event_data['attendees'] = valid_attendees
+    else:
+        current_event_data['attendees'] = []  # Se não houver participantes válidos, define como lista vazia
 
 
     # 4. Validar visibility
