@@ -86,14 +86,14 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
     }
 
     # Se houver location, busca o endereço formatado no Google Maps
-    if event_data['location']: 
+    if event_data['location']:
         formatted_address = await get_formatted_address(event_data['location'])
         if formatted_address:
             event_data['location'] = formatted_address
             print(f"📍 Endereço atualizado: {formatted_address}")
         else:
             print(f"⚠️ Mantendo endereço original: {event_data['location']}")
-        
+
     current_event_data, invalid_params = validate_event_data(event_data)
     print("Validando...\n\ncurrent_event_data:", current_event_data)
     print("invalid_params:", invalid_params)
@@ -114,24 +114,27 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
             )
             cancel_handler(auth_user, sender_number)
 
-        mensagem = format_event_validation_message(auth_user.current_event_data, invalid_params)
+        mensagem = format_event_validation_message(
+            auth_user.current_event_data, invalid_params)
         print("Dados do evento inválidos. Enviando mensagem de validação:", mensagem)
         await messenger.enviar_mensagem(mensagem, sender_number)
         await store_message(auth_user, 'assistant', f"{auth_user.current_event_data}", False)
         # Se nada bugar, quando o usuário vier de novo vão ser mais 2 mensagens da conversa
         auth_user.appointment_message_counter += 2
         await run_in_threadpool(auth_user.save)
-        print("Contador de mensagens atualizado:", auth_user.appointment_message_counter)
+        print("Contador de mensagens atualizado:",
+              auth_user.appointment_message_counter)
         return
 
     else:
         try:
-            current_event_data['attendees'].append({
-                # Associa o evento ao usuário autenticado.
-                'email': auth_user.email,
-                'displayName': auth_user.name,
-                'comment': 'Organizador'
-            })
+            attendees = current_event_data.setdefault('attendees', [])
+            if not any(a.get('email', '').lower() == auth_user.email.lower() for a in attendees):
+                attendees.append({
+                    'email': auth_user.email,
+                    'displayName': auth_user.name,
+                    'comment': 'Organizador'
+                })
             # Dados do evento validados.
             auth_user.current_event_data = current_event_data
             auth_user.waiting_event_data = "waiting_for_confirm"
@@ -140,14 +143,15 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
                   auth_user.current_event_data, auth_user)
             # Envia mensagem de confirmação para o usuário.
             print("Enviando mensagem de confirmação para o usuário:", sender_number)
-            mensagem = format_event_confirmation_message(auth_user.current_event_data)
+            mensagem = format_event_confirmation_message(
+                auth_user.current_event_data)
             await messenger.enviar_mensagem(mensagem, sender_number)
             await store_message(auth_user, 'assistant', f"{auth_user.current_event_data}", False)
             auth_user.appointment_message_counter += 2
             await run_in_threadpool(auth_user.save)
-            print("Contador de mensagens atualizado:", auth_user.appointment_message_counter)
-            
-            
+            print("Contador de mensagens atualizado:",
+                  auth_user.appointment_message_counter)
+
         except Exception as e:
             print("❌ Erro ao salvar usuário:", repr(e))
             traceback.print_exc()
