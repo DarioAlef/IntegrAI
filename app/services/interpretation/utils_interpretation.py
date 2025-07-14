@@ -146,8 +146,8 @@ def interpretar_cancelamento(mensagem: str) -> Dict[str, Union[bool, str]]:
             "output": {{"is_cancellation": "no"}}
         }},
         {{
-            "input": "Hmmm",
-            "output": {{"is_cancellation": "unidentified"}}
+            "input": "Faz o seguinte, tira todos os participantes",
+            "output": {{"is_cancellation": "no"}}
         }},
         {{
             "input": "Tanto faz pra mim",
