@@ -2,9 +2,11 @@ from django.db import models
 from django.http import JsonResponse
 
 # Create your models here.
+
+
 class ModelBase(models.Model):
     abstract = True
-    
+
     id = models.BigAutoField(
         db_column='id',
         null=False,
@@ -29,37 +31,36 @@ class ModelBase(models.Model):
     class Meta:
         abstract = True
         managed = True
-        
 
 
 class User(ModelBase):
     name = models.CharField(
-        max_length=255, 
-        null=True, 
-        blank=True # Agora pode ser nulo e em branco
-    )  
-    
+        max_length=255,
+        null=True,
+        blank=True  # Agora pode ser nulo e em branco
+    )
+
     phone_number = models.CharField(
-        max_length=20, 
-        unique=True, 
+        max_length=20,
+        unique=True,
         null=False
     )
-    
+
     email = models.EmailField(
-        max_length=255, 
-        unique=True, null=True, 
+        max_length=255,
+        unique=True, null=True,
         blank=True
-    )  
-    
-    ### Variáveis de estado de AUTENTICAÇÀO
+    )
+
+    # Variáveis de estado de AUTENTICAÇÀO
 
     waiting_user_data = models.CharField(
-        max_length=100, 
+        max_length=100,
         null=True,
         blank=True
     )  # Para armazenar o estado
 
-    #### Variáveis de estado de EVENTOS
+    # Variáveis de estado de EVENTOS
     waiting_event_data = models.CharField(
         max_length=100,
         null=True,
@@ -81,7 +82,6 @@ class User(ModelBase):
         return f"{self.name} ({self.phone_number})"
 
 
-
 ###################################
 SENDER_CHOICES = [
     ('user', 'User'),
@@ -94,25 +94,27 @@ STATUS_CHOICES = [
 ]
 
 # Classe que representa uma mensagem trocada entre usuário e assistente
+
+
 class Message(ModelBase):
     user = models.ForeignKey(
-        User, 
+        User,
         on_delete=models.CASCADE
     )
-    
+
     timestamp = models.DateTimeField(
         auto_now_add=True
     )
-    
+
     sender = models.CharField(
         max_length=10,
         choices=SENDER_CHOICES
     )
-    
+
     content = models.TextField()
-    
+
     is_voice = models.BooleanField(
-    default=False
+        default=False
     )
 
     def __str__(self):
@@ -120,16 +122,14 @@ class Message(ModelBase):
 
     class Meta:
         ordering = ['timestamp']
-        
-        
+
 
 # Classe que armazena o contexto de diálogo de uma sessão de usuário
 class DialogueContext(ModelBase):
-    user = models.ForeignKey(
-        User, 
-        on_delete=models.CASCADE
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="dialogue_context"
     )
-    
+
     context = models.JSONField(
         default=dict
     )  # Contextual data for dialogue
@@ -139,8 +139,8 @@ class DialogueContext(ModelBase):
 
     class Meta:
         ordering = ['modified_at']
-        
-        
+
+
 # Classe que armazena e gerencia áudios enviados pelo usuário
 class Audio(ModelBase):
     user = models.ForeignKey(
@@ -166,43 +166,43 @@ class Audio(ModelBase):
 
     class Meta:
         ordering = ['-created_at']
-        
-            
+
+
 class Event(ModelBase):
     user = models.ForeignKey(
-        User, 
+        User,
         on_delete=models.CASCADE
     )
-    
+
     event_summary = models.CharField(
-        max_length=255, 
+        max_length=255,
         null=False
     )
-    
+
     event_start = models.DateTimeField(
         null=False
     )
-    
+
     event_end = models.DateTimeField(
         null=True
     )
-    
+
     description = models.TextField(
-        null=True, 
+        null=True,
         blank=True
     )
-    
+
     location = models.CharField(
-        max_length=255, 
-        null=True, 
+        max_length=255,
+        null=True,
         blank=True
     )
-    
+
     attendees = models.JSONField(
         default=list,
         help_text="Lista de emails dos participantes"
     )
-    
+
     visibility = models.CharField(
         max_length=10,
         choices=[('private', 'Private'), ('public', 'Public')],
@@ -210,8 +210,8 @@ class Event(ModelBase):
     )
 
     reminders = models.JSONField(
-            default=list,
-            help_text="Lista de lembretes para o evento em minutos"
+        default=list,
+        help_text="Lista de lembretes para o evento em minutos"
     )
 
     def __str__(self):
