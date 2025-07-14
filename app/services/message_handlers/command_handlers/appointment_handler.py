@@ -112,7 +112,7 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
                 "Opa! Sinto muito. Ocorreu um erro ao tentar agendar o evento. Processo de agendamento cancelado. Tente novamente mais tarde.",
                 sender_number
             )
-            cancel_handler(auth_user, messenger, sender_number)
+            cancel_handler(auth_user, sender_number)
 
         mensagem = format_event_validation_message(auth_user.current_event_data, invalid_params)
         print("Dados do evento inválidos. Enviando mensagem de validação:", mensagem)
@@ -155,7 +155,7 @@ async def listen_user_messages(auth_user: User, messenger: EvolutionAPI, sender_
                 "Opa! Ocorreu um erro ao tentar agendar o evento. Tente novamente mais tarde.",
                 sender_number
             )
-            cancel_handler(auth_user, messenger, sender_number)
+            cancel_handler(auth_user, sender_number)
         return
 
 
@@ -190,7 +190,7 @@ async def confirmation_handler(auth_user: User, message, messenger: EvolutionAPI
                 "Opa! Ocorreu um erro ao tentar agendar o evento. Tente novamente mais tarde.",
                 sender_number
             )
-            cancel_handler(auth_user, messenger, sender_number)
+            cancel_handler(auth_user, sender_number)
         return
     else:
         await messenger.enviar_mensagem(
