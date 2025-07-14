@@ -22,6 +22,7 @@ def valid_user_message(message, from_me, user_authenticated):
 
 
 
+import ast
 from datetime import datetime, timedelta
 from typing import Union
 import re
@@ -175,7 +176,16 @@ def extrair_json_da_resposta(resposta: Union[str, dict]) -> dict:
                 except json.JSONDecodeError as e:
                     print(f"⚠️ {descricao} falhou: {e}")
                     continue
-            
+                
+            # 🔁 Novo passo: tenta com ast.literal_eval no original
+            try:
+                resultado = ast.literal_eval(json_str)
+                print("✅ Sucesso com: ast.literal_eval (fallback dict Python)")
+                return resultado
+            except Exception as e:
+                print("⚠️ ast.literal_eval falhou:", e)
+
+
             # Se nenhuma estratégia funcionou, retorna erro
             print("❌ Todas as estratégias falharam")
             return {"error": True}
