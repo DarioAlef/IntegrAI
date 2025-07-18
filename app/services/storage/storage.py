@@ -24,8 +24,8 @@ async def store_context(user: User, context):
     # Salva ou atualiza o contexto de diálogo de longo prazo no banco.
     await run_in_threadpool(
         DialogueContext.objects.update_or_create,
+        defaults={"context": context},
         user=user,  # Usa o ID do usuário como session_id.
-        context=context
     )
 
 async def retrieve_context(user: User):

@@ -5,7 +5,6 @@ import os
 from typing import Any, Dict, List, Union
 from dotenv import load_dotenv
 from groq import Groq  # Importa o cliente Groq
-from app.utils.now import now  # Importa a função de data e hora atual
 
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")

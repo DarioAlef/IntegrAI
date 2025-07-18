@@ -22,12 +22,13 @@ def valid_user_message(message, from_me, user_authenticated):
 
 
 
+import ast
 from datetime import datetime, timedelta
 from typing import Union
 import re
 import json
 
-from app.utils.now import now
+from app.utils.now import datetime_now
 
 def validate_event_data(event_data: dict) -> tuple[dict, dict]:
 
@@ -50,7 +51,7 @@ def validate_event_data(event_data: dict) -> tuple[dict, dict]:
         try:
             start = datetime.fromisoformat(event_data['event_start'])
             # now já é um objeto datetime, não precisa converter
-            actual_now = now
+            actual_now = datetime_now()
             if start >= actual_now:
                 current_event_data['event_start'] = event_data['event_start']
             else:
@@ -79,9 +80,34 @@ def validate_event_data(event_data: dict) -> tuple[dict, dict]:
             invalid_params['event_end'] = 'Sem data de início, não é possível determinar a data de término.'
 
     # 3. Campos opcionais
-    for key in ['description', 'location', 'attendees', 'reminders']:
+    for key in ['description', 'location', 'reminders']:
         if key in event_data:
             current_event_data[key] = event_data[key]
+
+    # 3.1 Validar attendees (se presente)
+    attendees = event_data.get('attendees')
+    if attendees:
+        if not isinstance(attendees, list):
+            invalid_params['attendees'] = 'O campo attendees deve ser uma lista.'
+        else:
+            valid_attendees = []
+            for idx, attendee in enumerate(attendees):
+                if not isinstance(attendee, dict):
+                    invalid_params[f'attendees[{idx}]'] = 'Cada participante deve ser um dicionário.'
+                    continue
+                email = attendee.get('email')
+                if not email:
+                    invalid_params[f'attendees[{idx}].email'] = 'O campo email é obrigatório para cada participante.'
+                elif '@' not in email or '.' not in email:
+                    invalid_params[f'attendees[{idx}].email'] = 'Email inválido.'
+                else:
+                    valid_attendees.append(attendee)
+
+            if valid_attendees:
+                current_event_data['attendees'] = valid_attendees
+    else:
+        current_event_data['attendees'] = []  # Se não houver participantes válidos, define como lista vazia
+
 
     # 4. Validar visibility
     visibility = event_data.get('visibility', 'private')
@@ -137,6 +163,9 @@ def extrair_json_da_resposta(resposta: Union[str, dict]) -> dict:
                 
                 # 5. Último recurso: remove quebras de linha e tenta
                 (json_str.replace('\n', ' ').replace('  ', ' '), "Normaliza espaços"),
+
+                # 6. Escapa aspas dentro de valores string (como em "aniversário")
+                (re.sub(r'(?<!\\)"([^"]*?)"(?![:,}\]])', lambda m: f'\\"{m.group(1)}\\"', json_str), "Escape aspas internas")
             ]
             
             for json_corrigido, descricao in fixes:
@@ -147,7 +176,16 @@ def extrair_json_da_resposta(resposta: Union[str, dict]) -> dict:
                 except json.JSONDecodeError as e:
                     print(f"⚠️ {descricao} falhou: {e}")
                     continue
-            
+                
+            # 🔁 Novo passo: tenta com ast.literal_eval no original
+            try:
+                resultado = ast.literal_eval(json_str)
+                print("✅ Sucesso com: ast.literal_eval (fallback dict Python)")
+                return resultado
+            except Exception as e:
+                print("⚠️ ast.literal_eval falhou:", e)
+
+
             # Se nenhuma estratégia funcionou, retorna erro
             print("❌ Todas as estratégias falharam")
             return {"error": True}

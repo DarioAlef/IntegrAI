@@ -57,7 +57,7 @@ class EvolutionAPI():
         
 
         # Envia a requisição POST para o Evolution API
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.post(url, json=payload, headers=self.headers)
 
         return response
