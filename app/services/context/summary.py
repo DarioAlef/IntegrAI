@@ -21,12 +21,15 @@ def gerar_resumo(messages, user: User, old_context):
     system_prompt = f"""
         "Você é um assistente responsável por atualizar o **resumo** e o **perfil do usuário** com base em uma conversa recente entre o usuário e o assistente de IA.
         ## Regras:
-        - Sempre responda APENAS com um JSON válido, no formato exato abaixo, sem texto extra ou explicações:
+        - Sempre responda APENAS com um JSON válido, **dentro de um bloco de código markdown**, assim:
+        ```json
         {{
             "resumo": str,  # resumo claro, coerente, com 500 a 700 caracteres da conversa completa (contexto anterior + novas mensagens)
             "user_profile_data": # dicionário com dados atualizados ou adicionados do usuário
         }}
+        ```
         - Em 'resumo', utilize as novas mensagens para atualizar o contexto anterior, fazendo uma descrição clara resumindo o perfil de conversa e interesse do usuário e o que foi discutido ou solicitado em toda a conversa.
+        - Dentro do campo "resumo", se precisar usar aspas dentro da string, ESCAPE as aspas com \\ (por exemplo: \"texto entre aspas\").
         - Em 'user_profile_data', adicione ou atualize dados úteis do usuário como: 'nickname', 'cidade_atual', 'aniversário', 'cpf', 'amigos', etc.
         - Se não houver dados suficientes para adicionar algum campo, não o faça (não crie chaves com valores imaginados).
         - Nunca remova campos já existentes — apenas adicione ou atualize valores.

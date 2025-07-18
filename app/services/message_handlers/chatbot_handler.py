@@ -1,6 +1,8 @@
 import re # Para trabalhar com expressões regulares (ex: remover tags <think>).
 import os
 import django
+
+from app.utils.formatting import limpar_think_tags
 # Inicializa o Django para permitir uso dos modelos fora do padrão Django.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'integrai.settings')
 django.setup()
@@ -26,13 +28,9 @@ async def chatbot_response(user: User, sender_number):
     # (Atualiza se oportuno) e recupera o contexto de diálogo de longo prazo.
     context = await context_handler(user, messages, count)
 
+    # Remove blocos <think>...</think> da resposta usando expressão regular.
     resposta = get_llm_response(messages, context=context)
-        # Remove blocos <think>...</think> da resposta usando expressão regular.
-    resposta = re.sub(r"<think>.*?</think>", "", resposta, flags=re.DOTALL)
-    # Remove tags <think> soltas (com ou sem quebra de linha).
-    resposta = re.sub(r"<think>\s*", "", resposta, flags=re.IGNORECASE)
-    resposta = re.sub(r"<think>\s*", "", resposta, flags=re.IGNORECASE)
-    resposta = resposta.strip()
+    resposta = limpar_think_tags(resposta)
 
     for part in split_message(resposta):
         await messenger.enviar_mensagem(part, sender_number)
