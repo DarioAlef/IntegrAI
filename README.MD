@@ -63,7 +63,7 @@ Siga estas instruções para configurar e executar o IntegrAI:
     *   Se você não tiver o Evolution API rodando, pode usar o Docker Compose:
 
         ```bash
-        cd api/evolution
+        cd docker
         docker-compose up -d
         ```
 

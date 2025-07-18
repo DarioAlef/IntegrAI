@@ -17,7 +17,7 @@ services:
   fastapi:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     container_name: fastapi
     restart: always
     volumes:

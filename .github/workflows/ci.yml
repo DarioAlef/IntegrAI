@@ -57,7 +57,7 @@ jobs:
           flake8 . || true
 
       - name: Build Docker image
-        run: docker build -t integrai-test .  # Builda a imagem Docker localmente para garantir que o Dockerfile está correto
+        run: docker build -f docker/Dockerfile -t integrai-test .  # Builda a imagem Docker localmente para garantir que o Dockerfile está correto
 
       - name: Run pytest
         env:
