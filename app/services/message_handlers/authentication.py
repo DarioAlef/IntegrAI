@@ -37,7 +37,7 @@ async def authenticate(phone_number, message) -> User | None:
                 await messenger.enviar_mensagem("Apresentacao_e_guia_de_uso[...]", phone_number)
                 return
             else:
-                await messenger.enviar_mensagem('Formato inválido de dados.\n\nPor favor, digite seu nome e email, separados por uma vírgula.\n\nExemplo: Thiago, thsilva.developer@gmail.com', phone_number)
+                await messenger.enviar_mensagem('Formato inválido de dados.\n\nPor favor, digite seu nome e email, separados por uma vírgula.\n\nExemplo: **Thiago, thsilva.developer@gmail.com**', phone_number)
                 print ({'status': 'Invalid name and email. Waiting for new try.'})
                 return 
         elif user.waiting_user_data == "waiting_for_edit":
@@ -67,5 +67,5 @@ async def authenticate(phone_number, message) -> User | None:
             return user
     except User.DoesNotExist:
         await create_user(phone_number)
-        await messenger.enviar_mensagem("Ainda não te cadastramos. Para que eu possa te oferecer os meus serviços, por favor, digite seu nome e email, separados por uma vírgula.\n\nExemplo: Thiago, thsilva.developer@gmail.com", phone_number)
+        await messenger.enviar_mensagem("Ainda não te cadastramos. Para que eu possa te oferecer os meus serviços, por favor, digite seu nome e email, separados por uma vírgula.\n\nExemplo: **Thiago, thsilva.developer@gmail.com**", phone_number)
         return

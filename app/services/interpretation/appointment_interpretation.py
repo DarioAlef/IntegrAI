@@ -3,7 +3,8 @@ import os
 from typing import Any, Dict, List, Union
 from dotenv import load_dotenv
 from groq import Groq  # Importa o cliente Groq
-from app.utils.now import now  # Importa a função de data e hora atual
+from app.utils.now import datetime_now
+from app.utils.validation import extrair_json_da_resposta  # Importa a função de data e hora atual
 
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
@@ -36,7 +37,7 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
     }}
 
     ## Considere a Data e Hora atuais:
-    "{now}"
+    "{datetime_now()}"
 
     ## Regras:
     - O evento sempre deve ser para o futuro.
@@ -107,9 +108,13 @@ def interpretar_agendamento(conversation: Dict[str, Any]) -> Union[Dict[str, Any
     conteudo = resposta.choices[0].message.content.strip()
     print("\n📥 Resposta bruta da LLM:\n", conteudo)
     # print("🧾 Conteúdo bruto da LLM:\n", conteudo)
+    conteudo = extrair_json_da_resposta(conteudo)
 
-    try:
-        return json.loads(conteudo)
+    try: 
+        if isinstance(conteudo, str):
+            return json.loads(conteudo)
+        else:
+            return conteudo  # já é dict, retorna direto
     except json.JSONDecodeError as e:
         print("❌ Erro ao decodificar JSON da resposta:", e)
         return {"error": True}

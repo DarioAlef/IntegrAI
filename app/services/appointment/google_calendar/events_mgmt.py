@@ -3,7 +3,6 @@ from typing import List, Optional, Dict
 import datetime as dt
 from zoneinfo import ZoneInfo
 
-# from app.utils.now import now  # Importa a função de data e hora atual
 # Importa as bibliotecas necessárias para autenticação e acesso à API do Google Calendar
 
 from google.auth.transport.requests import Request
@@ -12,6 +11,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+# Importa a função de data e hora atual
+from app.utils.now import datetime_now
 from app.utils.validation import format_event_time
 
 # Escopo de acesso ao Google Calendar
@@ -62,7 +63,7 @@ def get_user_events(user_email: str) -> List[Dict]:
 
         events_result = service.events().list(
             calendarId='primary',
-            timeMin= dt.datetime.now().astimezone(ZoneInfo('America/Manaus')).isoformat(),
+            timeMin=datetime_now().isoformat(),
             maxResults=10,
             singleEvents=True,
             orderBy='startTime'

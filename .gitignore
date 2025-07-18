@@ -12,3 +12,6 @@ __pycache__/
 # Estes devem estar na pasta app/services/calendar/
 *credentials.json
 *token.json
+
+# CD
+*update.sh

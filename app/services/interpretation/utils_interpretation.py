@@ -16,11 +16,11 @@ def interpretar_confirmacao(mensagem: str) -> Dict[str, Union[bool, str]]:
         ## Instruções:
         1. Se a mensagem **não for uma confirmação**, responda apenas com um JSON **no seguinte formato**:
         {{
-            "is_confirmation": "yes"
+            "is_confirmation": "no"
         }}
         2. Se for uma confirmação, responda com um JSON **no seguinte formato**:
         {{
-            "is_confirmation": "no",
+            "is_confirmation": "yes",
         }}
         3. Se você não identificar nem confirmação, nem negação, responda com um JSON válido **no seguinte formato**:
         {{
@@ -54,20 +54,24 @@ def interpretar_confirmacao(mensagem: str) -> Dict[str, Union[bool, str]]:
                 "output": {{"is_confirmation": "no" }}
             }},
             {{
-                "input": "Acho que sim.",
-                "output": {{"is_confirmation": "yes" }}
+                "input": "Perfeito, mas muda o título do evento para festa.",
+                "output": {{"is_confirmation": "no" }}
             }},
             {{
                 "input": "Pode mandar ver!",
                 "output": {{"is_confirmation": "yes" }}
             }},
             {{
-                "input": "Tanto faz pra mim.",
-                "output": {{"is_confirmation": "unidentified" }}
+                "input": "Tá ótimo, só altera o horário pra nove horas.",
+                "output": {{"is_confirmation": "no" }}
             }},
             {{
                 "input": "Isso não é comigo.",
                 "output": {{"is_confirmation": "unidentified" }}
+            }},
+            {{
+                "input": "9 horas da noite",
+                "output": {{"is_confirmation": "no"}}
             }}
         ]
 
@@ -142,8 +146,8 @@ def interpretar_cancelamento(mensagem: str) -> Dict[str, Union[bool, str]]:
             "output": {{"is_cancellation": "no"}}
         }},
         {{
-            "input": "Hmmm",
-            "output": {{"is_cancellation": "unidentified"}}
+            "input": "Faz o seguinte, tira todos os participantes",
+            "output": {{"is_cancellation": "no"}}
         }},
         {{
             "input": "Tanto faz pra mim",
